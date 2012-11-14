@@ -1,4 +1,3 @@
-require 'vagrant/dsl'
 require 'delegate'
 require 'chef-workflow/generic-support'
 require 'fileutils'

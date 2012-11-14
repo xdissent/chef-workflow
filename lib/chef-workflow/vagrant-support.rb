@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'vagrant/prison'
 require 'chef-workflow/generic-support'
 
 class VagrantSupport
