@@ -11,6 +11,7 @@ class KnifeSupport
     :knife_config_path      => File.join(Dir.pwd, '.chef-workflow', 'chef', 'knife.rb'),
     :roles_path             => File.join(Dir.pwd, 'roles'),
     :environments_path      => File.join(Dir.pwd, 'environments'),
+    :data_bags_path         => File.join(Dir.pwd, 'data_bags'),
     :test_environment       => "vagrant"
   }
 
