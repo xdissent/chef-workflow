@@ -3,10 +3,13 @@ require 'vagrant/prison'
 require 'chef-workflow/support/generic'
 
 class VagrantSupport
+  DEFAULT_VAGRANT_BOX = "http://files.vagrantup.com/precise64.box"
+  DEFAULT_PRISON_DIR = File.join(Dir.pwd, '.chef-workflow', 'prisons')
+
   attr_accessor :prison_dir
   attr_reader :box
 
-  def initialize(prison_dir=File.join(Dir.pwd, '.chef-workflow', 'prisons'), box_url="http://files.vagrantup.com/precise64.box")
+  def initialize(prison_dir=DEFAULT_PRISON_DIR, box_url=DEFAULT_VAGRANT_BOX)
     self.box_url = box_url
     @prison_dir = prison_dir
   end
