@@ -1,5 +1,5 @@
 require 'delegate'
-require 'chef-workflow/generic-support'
+require 'chef-workflow/support/generic'
 require 'fileutils'
 
 ENV["TEST_CHEF_SUBNET"] ||= "10.10.10.0"

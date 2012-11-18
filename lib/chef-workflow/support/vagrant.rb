@@ -1,6 +1,6 @@
 require 'fileutils'
 require 'vagrant/prison'
-require 'chef-workflow/generic-support'
+require 'chef-workflow/support/generic'
 
 class VagrantSupport
   attr_accessor :prison_dir

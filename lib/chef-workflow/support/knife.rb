@@ -1,6 +1,6 @@
 require 'fileutils'
 require 'erb'
-require 'chef-workflow/generic-support'
+require 'chef-workflow/support/generic'
 
 class KnifeSupport
   include GenericSupport
