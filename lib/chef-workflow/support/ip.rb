@@ -1,31 +1,21 @@
 require 'delegate'
-require 'chef-workflow/support/generic'
 require 'fileutils'
+require 'chef-workflow/support/generic'
+require 'chef-workflow/support/attr'
 
 ENV["TEST_CHEF_SUBNET"] ||= "10.10.10.0"
 
 class IPSupport < DelegateClass(Hash)
-  attr_writer :subnet
+  extend AttrSupport
+
+  fancy_attr :subnet
+  fancy_attr :ip_file
 
   def initialize(subnet=ENV["TEST_CHEF_SUBNET"], ip_file=File.join(Dir.pwd, '.chef-workflow', 'ips'))
     @subnet = subnet
     reset
     @ip_file = ip_file
     super(@ip_assignment)
-  end
-
-  def subnet(ip=nil)
-    if ip
-      @subnet = ip
-    end
-    @subnet
-  end
-
-  def ip_file(filename=nil)
-    if filename
-      @ip_file = filename
-    end
-    @ip_file
   end
 
   def reset
