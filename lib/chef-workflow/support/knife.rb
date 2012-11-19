@@ -1,14 +1,15 @@
 require 'fileutils'
 require 'erb'
 require 'chef-workflow/support/generic'
+require 'chef-workflow/support/general'
 
 class KnifeSupport
   include GenericSupport
 
   DEFAULTS = {
     :cookbooks_path         => File.join(Dir.pwd, 'cookbooks'),
-    :chef_config_path       => File.join(Dir.pwd, '.chef-workflow', 'chef'),
-    :knife_config_path      => File.join(Dir.pwd, '.chef-workflow', 'chef', 'knife.rb'),
+    :chef_config_path       => File.join(GeneralSupport.singleton.workflow_dir, 'chef'),
+    :knife_config_path      => File.join(GeneralSupport.singleton.workflow_dir, 'chef', 'knife.rb'),
     :roles_path             => File.join(Dir.pwd, 'roles'),
     :environments_path      => File.join(Dir.pwd, 'environments'),
     :data_bags_path         => File.join(Dir.pwd, 'data_bags'),

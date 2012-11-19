@@ -1,5 +1,6 @@
 require "chef-workflow/version"
 
+require 'chef-workflow/support/general'
 require 'chef-workflow/support/knife'
 require 'chef-workflow/support/vagrant'
 require 'chef-workflow/support/ip'
@@ -8,6 +9,10 @@ require 'chef-workflow/support/debug'
 class Chef
   module Workflow
     module ConfigureHelper
+      def configure_general(&block)
+        GeneralSupport.configure(&block)
+      end
+
       def configure_knife(&block)
         KnifeSupport.configure(&block)
       end
