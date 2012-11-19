@@ -1,7 +1,6 @@
 require 'set'
 require 'thread'
 require 'timeout'
-require 'fileutils'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
 
@@ -11,26 +10,9 @@ require 'chef-workflow/support/debug'
 # which have all their dependencies satisfied and items that haven't will wait
 # to execute until that happens.
 #
-class VMSupport
-  DEFAULT_VM_FILE = File.join(Dir.pwd, '.chef-workflow', 'vms')
-
-  class << self
-    extend AttrSupport
-    fancy_attr :vm_file
-  end
-
+class Scheduler
   extend AttrSupport
   include DebugSupport
-
-  def self.load
-    self.vm_file ||= DEFAULT_VM_FILE
-
-    if File.file?(vm_file)
-      return Marshal.load(File.binread(vm_file || DEFAULT_VM_FILE))
-    end
-
-    return nil
-  end
 
   fancy_attr :serial
 
@@ -43,12 +25,6 @@ class VMSupport
     @working          = { }
     @solved           = Set.new
     @queue            = Queue.new
-  end
-
-  def save
-    self.class.vm_file ||= DEFAULT_VM_FILE
-    marshalled = Marshal.dump(self)
-    File.binwrite(self.class.vm_file, marshalled)
   end
 
   #
