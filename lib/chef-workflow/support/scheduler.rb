@@ -3,6 +3,7 @@ require 'thread'
 require 'timeout'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
+require 'chef-workflow/support/vm'
 
 #
 # This is a scheduler for provisioners. It can run in parallel or serial mode,
@@ -17,14 +18,27 @@ class Scheduler
   fancy_attr :serial
 
   def initialize
-    @serial           = false
-    @vm_groups        = { }
-    @vm_dependencies  = { }
-    @solver_thread    = nil
-    @waiters          = Set.new
-    @working          = { }
-    @solved           = Set.new
-    @queue            = Queue.new
+    @serial         = false
+    @solver_thread  = nil
+    @working        = { }
+    @waiters        = Set.new
+    @solved         = Set.new
+    @queue          = Queue.new
+    @vm             = VM.load_file_file || VM.new 
+  end
+
+  #
+  # Helper to assist with dealing with a VM object
+  #
+  def vm_groups
+    @vm.groups
+  end
+  
+  #
+  # Helper to assist with dealing with a VM object
+  #
+  def vm_dependencies
+    @vm.dependencies
   end
 
   #
@@ -35,13 +49,13 @@ class Scheduler
   #
   def schedule_provision(group_name, provisioner, dependencies=[])
     provisioner.name = group_name # FIXME remove
-    @vm_groups[group_name] = provisioner
+    vm_groups[group_name] = provisioner
 
-    unless dependencies.all? { |x| @vm_groups.has_key?(x) }
+    unless dependencies.all? { |x| vm_groups.has_key?(x) }
       raise "One of your dependencies for #{group_name} has not been pre-declared. Cannot continue"
     end
 
-    @vm_dependencies[group_name] = dependencies.to_set
+    vm_dependencies[group_name] = dependencies.to_set
     @waiters.add(group_name)
   end
 
@@ -159,12 +173,12 @@ class Scheduler
     @waiters -= (@working.keys.to_set + @solved)
 
     @waiters.each do |group_name|
-      if @solved & @vm_dependencies[group_name] == @vm_dependencies[group_name]
+      if @solved & vm_dependencies[group_name] == vm_dependencies[group_name]
         if_debug do
           $stderr.puts "Provisioning #{group_name}"
         end
 
-        provisioner = @vm_groups[group_name]
+        provisioner = vm_groups[group_name]
 
         provision_block = lambda do
           raise "Could not provision #{group_name}" unless provisioner.startup
@@ -220,38 +234,4 @@ class Scheduler
       t.map(&:join)
     end
   end
-end
-
-class TestProvisioner
-  attr_accessor :name
-
-  def startup
-    $stderr.puts "running scheduled startup"
-    sleep 10
-    true
-  end
-
-  def shutdown
-    $stderr.puts "running scheduled shutdown"
-    true
-  end
-end
-
-$CHEF_WORKFLOW_DEBUG = 1
-
-v = VMSupport.new
-v.schedule_provision("foo", TestProvisioner.new)
-v.schedule_provision("bar", TestProvisioner.new)
-v.schedule_provision("quux", TestProvisioner.new, %w[foo])
-v.schedule_provision("fart", TestProvisioner.new, %w[bar])
-v.schedule_provision("poop", TestProvisioner.new, %w[bar quux])
-v.schedule_provision("poopie", TestProvisioner.new, %w[foo bar])
-v.schedule_provision("hi", TestProvisioner.new)
-v.schedule_provision("longcat", TestProvisioner.new, %w[poop poopie hi])
-v.run
-
-begin
-  v.wait_for("longcat") rescue nil
-  v.teardown
-rescue Interrupt
 end
