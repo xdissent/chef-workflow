@@ -4,6 +4,8 @@ require 'chef-workflow/support/general'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
 
+# XXX see the dynamic require at the bottom
+
 #
 # This class mainly exists to track the run state of the Scheduler, and is kept
 # simple so that the contents can be marshalled and restored from a file.
@@ -53,4 +55,9 @@ class VM
   end
 
   alias initialize clean
+end
+
+# XXX require all the provisioners -- marshal will blow up unless this is done.
+Dir[File.join(File.expand_path(File.dirname(__FILE__)), 'vm', '*')].each do |x|
+  require x
 end

@@ -110,6 +110,9 @@ class Scheduler
   # what's solved and what's working. 
   #
   def run
+    # short circuit if we're not serial and already running
+    return if @solver_thread and !@serial
+
     handler = lambda do
       p ["solved:", solved]
       p ["working:", @working]
@@ -214,13 +217,10 @@ class Scheduler
   #
   # Instruct all the provisioners to tear down. Calls #stop as its first action.
   #
-  # In parallel mode, the teardown will be done in parallel BUT this call will
-  # block until they all complete.
+  # This is always done serially. For sanity.
   #
   def teardown
     stop
-
-    t = []
 
     solved.each do |group_name|
       if_debug do
@@ -229,25 +229,13 @@ class Scheduler
 
       provisioner = vm_groups[group_name]
 
-      provisioner_block = lambda do
-        provisioner.reverse.each do |this_prov|
-          unless this_prov.shutdown
-            if_debug do
-              $stderr.puts "Could not deprovision group #{group_name}."
-            end
+      provisioner.reverse.each do |this_prov|
+        unless this_prov.shutdown
+          if_debug do
+            $stderr.puts "Could not deprovision group #{group_name}."
           end
         end
       end
-
-      if @serial
-        provisioner_block.call
-      else
-        t.push(Thread.new(&provisioner_block))
-      end
-    end
-
-    unless @serial
-      t.map(&:join)
     end
 
     @vm.clean
