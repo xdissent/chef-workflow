@@ -5,6 +5,12 @@ require 'fileutils'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
 
+#
+# This is a scheduler for provisioners. It can run in parallel or serial mode,
+# and is dependency-based, that is, it will only schedule items for execution
+# which have all their dependencies satisfied and items that haven't will wait
+# to execute until that happens.
+#
 class VMSupport
   DEFAULT_VM_FILE = File.join(Dir.pwd, '.chef-workflow', 'vms')
 
@@ -45,6 +51,12 @@ class VMSupport
     File.binwrite(self.class.vm_file, marshalled)
   end
 
+  #
+  # Schedule a group of VMs for provision. This takes a group name, which is a
+  # string, a provisioner object, and a list of string dependencies. If
+  # anything in the dependencies list hasn't been pre-declared, it refuses to
+  # continue.
+  #
   def schedule_provision(group_name, provisioner, dependencies=[])
     provisioner.name = group_name # FIXME remove
     @vm_groups[group_name] = provisioner
@@ -57,6 +69,11 @@ class VMSupport
     @waiters.add(group_name)
   end
 
+  #
+  # Sleep until this list of dependencies are resolved. In parallel mode, will
+  # raise if an exeception occurred while waiting for these resources. In
+  # serial mode, wait_for just returns nil.
+  #
   def wait_for(*dependencies)
     return nil if @serial
 
@@ -67,6 +84,11 @@ class VMSupport
     end
   end
 
+  #
+  # Helper method for scheduling. Wraps items in a timeout and immediately
+  # checks all running workers for exceptions, which are immediately bubbled up
+  # if there are any. If do_loop is true, it will retry the timeout.
+  #
   def with_timeout(do_loop=true)
     Timeout.timeout(10) do
       if @working.values.reject(&:alive?).size > 0
@@ -79,11 +101,23 @@ class VMSupport
     retry if do_loop
   end
 
+  #
+  # Start the scheduler. In serial mode this call will block until the whole
+  # dependency graph is satisfied, or one of the provisions fails, at which
+  # point an exception will be raised. In parallel mode, this call completes
+  # immediately, and you should use #wait_for to control main thread flow.
+  #
+  # This call also installs a SIGINFO (Ctrl+T in the terminal on macs) and
+  # SIGUSR2 handler which can be used to get information on the status of
+  # what's solved and what's working. 
+  #
   def run
-    trap("INFO") do
+    handler = lambda do
       p ["solved:", @solved]
       p ["working:", @working]
     end
+
+    %w[USR2 INFO].each { |sig| trap(sig, &handler) }
 
     queue_runner = lambda do
       run = true
@@ -127,6 +161,10 @@ class VMSupport
     end
   end
 
+  #
+  # Instructs the scheduler to stop. Note that this is not an interrupt, and
+  # the queue will still be exhausted before terminating.
+  #
   def stop
     if @serial
       @queue << nil
@@ -137,6 +175,10 @@ class VMSupport
     end
   end
 
+  #
+  # This method determines what 'waiters', or provisioners that cannot
+  # provision yet because of unresolved dependencies, can be executed.
+  #
   def service_resolved_waiters
     @waiters -= (@working.keys.to_set + @solved)
 
@@ -165,6 +207,12 @@ class VMSupport
     end
   end
 
+  #
+  # Instruct all the provisioners to tear down. Calls #stop as its first action.
+  #
+  # In parallel mode, the teardown will be done in parallel BUT this call will
+  # block until they all complete.
+  #
   def teardown
     stop
 
