@@ -9,8 +9,6 @@ require 'chef-workflow/support/debug'
 # simple so that the contents can be marshalled and restored from a file.
 #
 class VM
-  DEFAULT_VM_FILE = File.join(GeneralSupport.singleton.workflow_dir, 'vms')
-
   class << self
     extend AttrSupport
     fancy_attr :vm_file
@@ -24,7 +22,7 @@ class VM
   # control the location of this file.
   #
   def self.load_from_file
-    self.vm_file ||= DEFAULT_VM_FILE
+    vm_file = GeneralSupport.singleton.vm_file
 
     if File.file?(vm_file)
       return Marshal.load(File.binread(vm_file || DEFAULT_VM_FILE))
@@ -38,10 +36,10 @@ class VM
   # location of this file.
   #
   def save_to_file
-    self.class.vm_file ||= DEFAULT_VM_FILE
+    vm_file = GeneralSupport.singleton.vm_file
     marshalled = Marshal.dump(self)
-    FileUtils.mkdir_p(File.dirname(self.class.vm_file))
-    File.binwrite(self.class.vm_file, marshalled)
+    FileUtils.mkdir_p(File.dirname(vm_file))
+    File.binwrite(vm_file, marshalled)
   end
 
   attr_reader :groups
