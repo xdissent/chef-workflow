@@ -55,7 +55,8 @@ class Scheduler
   # continue.
   #
   def schedule_provision(group_name, provisioner, dependencies=[])
-    provisioner.name = group_name # FIXME remove
+    provisioner = [provisioner] unless provisioner.kind_of?(Array)
+    provisioner.each { |x| x.name = group_name }
     vm_groups[group_name] = provisioner
 
     unless dependencies.all? { |x| vm_groups.has_key?(x) }
@@ -188,7 +189,9 @@ class Scheduler
         provisioner = vm_groups[group_name]
 
         provision_block = lambda do
-          raise "Could not provision #{group_name}" unless provisioner.startup
+          provisioner.each do |this_prov|
+            raise "Could not provision #{group_name}" unless this_prov.startup
+          end
           @queue << group_name
         end
 
@@ -217,15 +220,17 @@ class Scheduler
 
     solved.each do |group_name|
       if_debug do
-        $stderr.puts "Attempting to terminate VM group #{group_name}"
+        $stderr.puts "Attempting to deprovision group #{group_name}"
       end
 
       provisioner = vm_groups[group_name]
 
       provisioner_block = lambda do
-        unless provisioner.shutdown
-          if_debug do
-            $stderr.puts "Could not terminate VM group #{group_name}."
+        provisioner.reverse.each do |this_prov|
+          unless this_prov.shutdown
+            if_debug do
+              $stderr.puts "Could not deprovision group #{group_name}."
+            end
           end
         end
       end

@@ -1,7 +1,6 @@
-require 'chef-workflow/support/attr'
 require 'chef-workflow/support/vm'
 
-class VM::Vagrant
+class VM::VagrantProvisioner
   attr_reader :prison
 
   def initialize(prison)
