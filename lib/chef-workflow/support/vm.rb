@@ -1,4 +1,6 @@
 require 'set'
+require 'fileutils'
+require 'chef-workflow/support/general'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
 
@@ -7,7 +9,7 @@ require 'chef-workflow/support/debug'
 # simple so that the contents can be marshalled and restored from a file.
 #
 class VM
-  DEFAULT_VM_FILE = File.join(Dir.pwd, '.chef-workflow', 'vms')
+  DEFAULT_VM_FILE = File.join(GeneralSupport.singleton.workflow_dir, 'vms')
 
   class << self
     extend AttrSupport
@@ -38,6 +40,7 @@ class VM
   def save_to_file
     self.class.vm_file ||= DEFAULT_VM_FILE
     marshalled = Marshal.dump(self)
+    FileUtils.mkdir_p(File.dirname(self.class.vm_file))
     File.binwrite(self.class.vm_file, marshalled)
   end
 
