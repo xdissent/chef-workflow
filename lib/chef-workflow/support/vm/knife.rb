@@ -25,8 +25,8 @@ class VM::KnifeProvisioner
   attr_accessor :run_list
   attr_accessor :name
 
-  def initialize(ips)
-    @ips            = ips
+  def initialize
+    @ips            = []
     @username       = nil
     @password       = nil
     @ssh_key        = nil
@@ -38,8 +38,10 @@ class VM::KnifeProvisioner
     @node_names     = []
   end
 
-  def startup
+  def startup(*args)
+    @ips = args.first.first #argh
     raise "This provisioner is unnamed, cannot continue" unless name
+    raise "This provisioner requires ip addresses which were not supplied" unless ips
 
     t = []
     ips.each_with_index do |ip, index|

@@ -189,8 +189,12 @@ class Scheduler
         provisioner = vm_groups[group_name]
 
         provision_block = lambda do
+          # FIXME maybe a way to specify initial args?
+          args = nil
           provisioner.each do |this_prov|
-            raise "Could not provision #{group_name}" unless this_prov.startup
+            unless args = this_prov.startup(args)
+              raise "Could not provision #{group_name}"
+            end
           end
           @queue << group_name
         end

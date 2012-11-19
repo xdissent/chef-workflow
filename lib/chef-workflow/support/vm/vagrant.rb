@@ -2,14 +2,16 @@ require 'chef-workflow/support/vm'
 
 class VM::VagrantProvisioner
   attr_reader :prison
+  attr_reader :ips
 
-  def initialize(prison)
+  def initialize(prison, ips)
     @prison = prison
+    @ips = ips
   end
 
-  def startup
+  def startup(*args)
     prison.construct
-    prison.start
+    return prison.start ? [ips] : false
   end
 
   def shutdown
