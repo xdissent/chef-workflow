@@ -22,9 +22,16 @@ class Scheduler
     @solver_thread  = nil
     @working        = { }
     @waiters        = Set.new
-    @solved         = Set.new
     @queue          = Queue.new
-    @vm             = VM.load_file_file || VM.new 
+    @vm             = VM.load_from_file || VM.new 
+    at_exit { @vm.save_to_file }
+  end
+
+  #
+  # Helper to assist with dealing with a VM object
+  #
+  def solved
+    @vm.provisioned
   end
 
   #
@@ -68,7 +75,7 @@ class Scheduler
     return nil if @serial
 
     dep_set = dependencies.to_set
-    until dep_set & @solved == dep_set
+    until dep_set & solved == dep_set
       sleep 1
       @solver_thread.join unless @solver_thread.alive?
     end
@@ -103,7 +110,7 @@ class Scheduler
   #
   def run
     handler = lambda do
-      p ["solved:", @solved]
+      p ["solved:", solved]
       p ["working:", @working]
     end
 
@@ -129,7 +136,7 @@ class Scheduler
 
         ready.each do |r|
           if r
-            @solved.add(r)
+            solved.add(r)
             @working.delete(r)
           else
             run = false
@@ -170,10 +177,10 @@ class Scheduler
   # provision yet because of unresolved dependencies, can be executed.
   #
   def service_resolved_waiters
-    @waiters -= (@working.keys.to_set + @solved)
+    @waiters -= (@working.keys.to_set + solved)
 
     @waiters.each do |group_name|
-      if @solved & vm_dependencies[group_name] == vm_dependencies[group_name]
+      if solved & vm_dependencies[group_name] == vm_dependencies[group_name]
         if_debug do
           $stderr.puts "Provisioning #{group_name}"
         end
@@ -208,12 +215,12 @@ class Scheduler
 
     t = []
 
-    @solved.each do |group_name|
+    solved.each do |group_name|
       if_debug do
         $stderr.puts "Attempting to terminate VM group #{group_name}"
       end
 
-      provisioner = @vm_groups[group_name]
+      provisioner = vm_groups[group_name]
 
       provisioner_block = lambda do
         unless provisioner.shutdown
@@ -233,5 +240,7 @@ class Scheduler
     unless @serial
       t.map(&:join)
     end
+
+    @vm.clean
   end
 end

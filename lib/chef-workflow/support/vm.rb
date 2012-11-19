@@ -1,3 +1,4 @@
+require 'set'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
 
@@ -42,9 +43,13 @@ class VM
 
   attr_reader :groups
   attr_reader :dependencies
+  attr_reader :provisioned
 
-  def initialize
+  def clean
     @groups        = { }
     @dependencies  = { }
+    @provisioned   = Set.new
   end
+
+  alias initialize clean
 end
