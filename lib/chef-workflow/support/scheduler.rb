@@ -18,6 +18,7 @@ class Scheduler
   fancy_attr :serial
 
   def initialize
+    @solved_mutex   = Mutex.new
     @serial         = false
     @solver_thread  = nil
     @working        = { }
@@ -49,12 +50,20 @@ class Scheduler
   end
 
   #
+  # Helper to assist with dealing with a VM object
+  #
+  def vm_working
+    @vm.working
+  end
+
+  #
   # Schedule a group of VMs for provision. This takes a group name, which is a
   # string, a provisioner object, and a list of string dependencies. If
   # anything in the dependencies list hasn't been pre-declared, it refuses to
   # continue.
   #
   def schedule_provision(group_name, provisioner, dependencies=[])
+    return nil if vm_groups[group_name]
     provisioner = [provisioner] unless provisioner.kind_of?(Array)
     provisioner.each { |x| x.name = group_name }
     vm_groups[group_name] = provisioner
@@ -140,8 +149,11 @@ class Scheduler
 
         ready.each do |r|
           if r
-            solved.add(r)
-            @working.delete(r)
+            @solved_mutex.synchronize do
+              solved.add(r)
+              @working.delete(r)
+              vm_working.delete(r)
+            end
           else
             run = false
           end
@@ -202,6 +214,8 @@ class Scheduler
           @queue << group_name
         end
 
+        vm_working.add(group_name)
+
         if @serial
           # HACK: just give the working check something that will always work.
           #       Probably should just mock it.
@@ -215,6 +229,64 @@ class Scheduler
   end
 
   #
+  # Teardown a single group -- modifies the solved formula. Be careful to
+  # resupply dependencies if you use this, as nothing will resolve until you
+  # resupply it.
+  #
+  # This takes an optional argument to wait for the group to be solved before
+  # attempting to tear it down. Setting this to false effectively says, "I know
+  # what I'm doing", and you should feel bad if you file an issue because you
+  # supplied it.
+  #
+
+  def teardown_group(group_name, wait=true)
+    wait_for(group_name) if wait
+
+    dependent_items = vm_dependencies.partition { |k,v| v.include?(group_name) }.first.map(&:first)
+
+    if_debug do
+      $stderr.puts "Trying to terminate #{group_name}, found #{dependent_items.inspect} depending on it"
+    end
+
+    @solved_mutex.synchronize do
+      dependent_and_working = @working.keys & dependent_items
+
+      if dependent_and_working.count > 0
+        $stderr.puts "#{dependent_and_working.inspect} are depending on #{group_name}, which you are trying to deprovision."
+        $stderr.puts "We can't resolve this problem for you, and future converges may fail during this run that would otherwise work."
+        $stderr.puts "Consider using wait_for to better control the dependencies, or turning serial provisioning on."
+      end
+
+      deprovision_group(group_name)
+    end
+
+  end
+
+  #
+  # Performs the deprovision of a group by replaying its provision strategy
+  # backwards and applying the #shutdown method instead of the #startup method.
+  # Removes it from the various state tables if true is set as the second
+  # argument, which is the default.
+  #
+  def deprovision_group(group_name, clean_state=true)
+    provisioner = vm_groups[group_name]
+
+    provisioner.reverse.each do |this_prov|
+      unless this_prov.shutdown
+        if_debug do
+          $stderr.puts "Could not deprovision group #{group_name}."
+        end
+      end
+    end
+
+    if clean_state
+      solved.delete(group_name)
+      vm_dependencies.delete(group_name)
+      vm_groups.delete(group_name)
+    end
+  end
+
+  #
   # Instruct all the provisioners to tear down. Calls #stop as its first action.
   #
   # This is always done serially. For sanity.
@@ -222,20 +294,12 @@ class Scheduler
   def teardown
     stop
 
-    solved.each do |group_name|
+    (solved + vm_working).each do |group_name|
       if_debug do
         $stderr.puts "Attempting to deprovision group #{group_name}"
       end
 
-      provisioner = vm_groups[group_name]
-
-      provisioner.reverse.each do |this_prov|
-        unless this_prov.shutdown
-          if_debug do
-            $stderr.puts "Could not deprovision group #{group_name}."
-          end
-        end
-      end
+      deprovision_group(group_name, false) # clean this after everything finishes
     end
 
     @vm.clean

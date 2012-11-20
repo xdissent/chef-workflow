@@ -47,11 +47,13 @@ class VM
   attr_reader :groups
   attr_reader :dependencies
   attr_reader :provisioned
+  attr_reader :working
 
   def clean
     @groups        = { }
     @dependencies  = { }
     @provisioned   = Set.new
+    @working       = Set.new
   end
 
   alias initialize clean
