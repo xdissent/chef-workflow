@@ -1,18 +1,18 @@
 require 'chef-workflow/support/debug'
 require 'chef-workflow/support/vm'
 require 'chef-workflow/support/knife'
+require 'chef-workflow/support/knife-plugin'
 require 'chef/node'
 require 'chef/search/query'
-require 'chef/application/knife'
 require 'chef/knife/bootstrap'
 require 'chef/knife/client_delete'
 require 'chef/knife/node_delete'
 require 'timeout'
-require 'stringio'
 
 class VM::KnifeProvisioner
 
   include DebugSupport
+  include KnifePluginSupport
   
   attr_accessor :username
   attr_accessor :password
@@ -105,21 +105,6 @@ class VM::KnifeProvisioner
     return true
   rescue Timeout::Error
     raise "Bootstrapped nodes for #{name} did not appear in Chef search index after 60 seconds."
-  end
-
-  def init_knife_plugin(klass, args)
-    klass.options = Chef::Application::Knife.options.merge(klass.options)
-    klass.load_deps
-    cli = klass.new(args)
-    cli.ui = Chef::Knife::UI.new(
-      StringIO.new('', 'w'), 
-      StringIO.new('', 'w'),
-      StringIO.new('', 'r'),
-      cli.config
-    )
-    cli.configure_chef
-
-    return cli
   end
 
   def bootstrap(node_name, ip)
