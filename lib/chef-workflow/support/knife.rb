@@ -13,6 +13,10 @@ class KnifeSupport
     :roles_path             => File.join(Dir.pwd, 'roles'),
     :environments_path      => File.join(Dir.pwd, 'environments'),
     :data_bags_path         => File.join(Dir.pwd, 'data_bags'),
+    :ssh_user               => "vagrant",
+    :ssh_password           => "vagrant",
+    :ssh_identity_file      => nil,
+    :use_sudo               => true,
     :test_environment       => "vagrant"
   }
 
