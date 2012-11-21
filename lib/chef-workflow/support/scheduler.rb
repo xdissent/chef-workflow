@@ -280,6 +280,10 @@ class Scheduler
   def deprovision_group(group_name, clean_state=true)
     provisioner = vm_groups[group_name]
 
+    if_debug do
+      $stderr.puts "Attempting to deprovision group #{group_name}"
+    end
+
     provisioner.reverse.each do |this_prov|
       unless this_prov.shutdown
         if_debug do
@@ -304,10 +308,6 @@ class Scheduler
     stop
 
     (solved + vm_working).each do |group_name|
-      if_debug do
-        $stderr.puts "Attempting to deprovision group #{group_name}"
-      end
-
       deprovision_group(group_name, false) # clean this after everything finishes
     end
 

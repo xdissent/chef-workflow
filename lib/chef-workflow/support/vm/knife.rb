@@ -83,7 +83,7 @@ class VM::KnifeProvisioner
     Timeout.timeout(60) do
       until unchecked_node_names.empty?
         node_name = unchecked_node_names.shift
-        if_debug(2) do
+        if_debug(3) do
           $stderr.puts "Checking search validity for node #{node_name}"
         end
 
@@ -136,6 +136,10 @@ class VM::KnifeProvisioner
         puts bootstrap_cli.ui.stdout.string
         puts bootstrap_cli.ui.stderr.string
         raise "bootstrap for #{node_name}/#{ip} wasn't successful."
+      end
+      if_debug(2) do
+        puts bootstrap_cli.ui.stdout.string
+        puts bootstrap_cli.ui.stderr.string
       end
     end
   end
