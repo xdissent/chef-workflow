@@ -3,25 +3,52 @@ require 'chef-workflow/support/ip'
 require 'chef-workflow/support/vm'
 require 'vagrant/prison'
 
+#
+# Provisions a server group with vagrant and virtualbox.
+#
+# All vagrant machines share the same IP address on eth0, which is typically
+# 10.0.2.15. To compensate for that, a host-only network address will be
+# auto-generated for each server in the group and lives on eth1. It is strongly
+# recommended that you deal with this problem in your chef cookbooks, as
+# node["ipaddress"] will typically be wrong and we cannot compensate for it.
+#
+# Groups provisioned in this manner are done so with Vagrant::Prison.
+#
 class VM::VagrantProvisioner
+  # Vagrant::Prison object
   attr_reader :prison
+  # number of servers to provision
   attr_reader :number_of_servers
+  # name of server group
   attr_accessor :name
 
+  #
+  # Constructor. Expects a server group name and a number of servers to provision.
+  #
   def initialize(name, number_of_servers)
     @prison             = nil
     @name               = name
     @number_of_servers  = number_of_servers
   end
 
+  #
+  # Get the ips associated with this server group.
+  #
   def ips
     IPSupport.singleton.get_role_ips(name)
   end
 
+  #
+  # Get the appropriate Vagrant UI class, depending on debugging settings.
+  #
   def ui_class
     $CHEF_WORKFLOW_DEBUG >= 2 ? Vagrant::UI::Basic : Vagrant::UI::Silent
   end
 
+  #
+  # Provision a group of servers. If successful, returns an array of the ips
+  # allocated for the group. Ignores incoming arguments.
+  #
   def startup(*args)
     IPSupport.singleton.delete_role(name)
 
@@ -44,6 +71,10 @@ class VM::VagrantProvisioner
     return prison.start ? [ips] : false
   end
 
+  #
+  # Deprovisions the servers for this group, and cleans up the prison and
+  # allocated IP addresses.
+  #
   def shutdown
     prison.configure_environment(:ui_class => ui_class)
     prison.cleanup

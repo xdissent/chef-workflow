@@ -9,22 +9,51 @@ require 'chef/knife/client_delete'
 require 'chef/knife/node_delete'
 require 'timeout'
 
+#
+# The Knife Provisioner does three major things:
+#
+# * Bootstraps a series of machines living on IP addresses supplied to it
+# * Ensures that they converged successfully (if not, raises and displays output)
+# * Waits until chef has indexed their metadata
+#
+# On deprovision, it deletes the nodes and clients related to this server group.
+#
+# Machines are named as such: $server_group-$number, where $number starts at 0
+# and increases with the number of servers requested. Your node names will be
+# named this as well as the clients associated with them.
+#
+# It does as much of this as it can in parallel, but stalls the current thread
+# until the subthreads complete. This allows is to work as quickly as possible
+# in a 'serial' scheduling scenario as we know bootstrapping can always occur
+# in parallel for the group.
+#
 class VM::KnifeProvisioner
 
   include DebugSupport
   include KnifePluginSupport
-  
+ 
+  # the username for SSH.
   attr_accessor :username
+  # the password for SSH.
   attr_accessor :password
+  # drive knife bootstrap's sudo functionality.
   attr_accessor :use_sudo
+  # the ssh key to be used for SSH
   attr_accessor :ssh_key
+  # the bootstrap template to be used.
   attr_accessor :template_file
+  # the chef environment to be used.
   attr_accessor :environment
+  # the port to contact for SSH
   attr_accessor :port
+  # the list of IPs to provision.
   attr_accessor :ips
+  # the run list of this server group.
   attr_accessor :run_list
+  # the name of this server group.
   attr_accessor :name
 
+  # constructor.
   def initialize
     @ips            = []
     @username       = nil
@@ -38,6 +67,14 @@ class VM::KnifeProvisioner
     @node_names     = []
   end
 
+  #
+  # Runs the provisioner. Accepts an array of IP addresses as its first
+  # argument, intended to be provided by provisioners that ran before it as
+  # their return value.
+  #
+  # Will raise if the IPs are not supplied or the provisioner is not named with
+  # a server group.
+  #
   def startup(*args)
     @ips = args.first.first #argh
     raise "This provisioner is unnamed, cannot continue" unless name
@@ -55,6 +92,10 @@ class VM::KnifeProvisioner
     return check_nodes
   end
 
+  #
+  # Deprovisions the server group. Runs node delete and client delete on all
+  # nodes that were created by this provisioner.
+  #
   def shutdown
     t = []
 
@@ -70,6 +111,11 @@ class VM::KnifeProvisioner
     t.each(&:join)
   end
 
+  #
+  # Checks that the nodes have made it into the search index. Will block until
+  # all nodes in this server group are found, or a 60 second timeout is
+  # reached, at which point it will raise.
+  #
   def check_nodes
     q = Chef::Search::Query.new
     unchecked_node_names = @node_names.dup
@@ -107,6 +153,10 @@ class VM::KnifeProvisioner
     raise "Bootstrapped nodes for #{name} did not appear in Chef search index after 60 seconds."
   end
 
+  #
+  # Bootstraps a single node. Validates bootstrap by checking the node metadata
+  # directly and ensuring it made it into the chef server.
+  #
   def bootstrap(node_name, ip)
     args = []
 
@@ -144,10 +194,16 @@ class VM::KnifeProvisioner
     end
   end
 
+  #
+  # Deletes a chef client.
+  #
   def client_delete(node_name)
     init_knife_plugin(Chef::Knife::ClientDelete, [node_name, '-y']).run
   end
 
+  #
+  # Deletes a chef node.
+  #
   def node_delete(node_name)
     init_knife_plugin(Chef::Knife::NodeDelete, [node_name, '-y']).run
   end

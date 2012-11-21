@@ -8,19 +8,35 @@ require 'chef-workflow/support/debug'
 
 class Chef
   module Workflow
+    #
+    # Basic helpers (intended to be mixed in elsewhere) to configure the
+    # various support configuration systems.
+    #
     module ConfigureHelper
+      #
+      # Configure 'GeneralSupport'
+      #
       def configure_general(&block)
         GeneralSupport.configure(&block)
       end
 
+      #
+      # Configure 'KnifeSupport'
+      #
       def configure_knife(&block)
         KnifeSupport.configure(&block)
       end
 
+      #
+      # Configure 'VagrantSupport'
+      #
       def configure_vagrant(&block)
         VagrantSupport.configure(&block)
       end
-
+      
+      #
+      # Configure 'IPSupport' - you probably don't need to do this.
+      #
       def configure_ips(&block)
         IPSupport.configure(&block)
       end

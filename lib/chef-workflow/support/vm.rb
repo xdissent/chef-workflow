@@ -4,7 +4,9 @@ require 'chef-workflow/support/general'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
 
+#--
 # XXX see the dynamic require at the bottom
+#++
 
 #
 # This class mainly exists to track the run state of the Scheduler, and is kept
@@ -44,9 +46,13 @@ class VM
     File.binwrite(vm_file, marshalled)
   end
 
+  # the vm groups and their provisioning lists.
   attr_reader :groups
+  # the dependencies that each vm group depends on
   attr_reader :dependencies
+  # the set of provisioned (solved) groups
   attr_reader :provisioned
+  # the set of provisioning (working) groups
   attr_reader :working
 
   def clean

@@ -3,9 +3,13 @@ require 'erb'
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/general'
 
+#
+# Configuration class for chef tooling and SSH interaction. Uses `GenericSupport`.
+#
 class KnifeSupport
   include GenericSupport
 
+  # defaults, yo
   DEFAULTS = {
     :cookbooks_path         => File.join(Dir.pwd, 'cookbooks'),
     :chef_config_path       => File.join(GeneralSupport.singleton.workflow_dir, 'chef'),
@@ -33,6 +37,12 @@ class KnifeSupport
   cookbook_path            [ '<%= KnifeSupport.singleton.cookbooks_path %>' ]
   EOF
 
+  #
+  # Helper method to allow extensions to add attributes to this class. Could
+  # probably be replaced by `AttrSupport`. Takes an attribute name and a
+  # default which will be set initially, intended to be overridden by the user
+  # if necessary.
+  #
   def self.add_attribute(attr_name, default)
     KnifeSupport.configure
 
@@ -87,6 +97,10 @@ class KnifeSupport
     end
   end
 
+  #
+  # Writes out a knife.rb based on the settings in this configuration. Uses the
+  # `knife_config_path` and `chef_config_path` to determine where to write it.
+  #
   def build_knife_config
     FileUtils.mkdir_p(chef_config_path)
     File.binwrite(knife_config_path, ERB.new(knife_config_template).result(binding))

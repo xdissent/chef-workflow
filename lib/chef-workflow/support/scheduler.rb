@@ -15,8 +15,19 @@ class Scheduler
   extend AttrSupport
   include DebugSupport
 
+  ##
+  # :attr:
+  #
+  # Turn serial mode on (off by default). This forces the scheduler to execute
+  # every provision in order, even if it could handle multiple provisions at
+  # the same time.
+  #
   fancy_attr :serial
 
+  #
+  # Constructor. If the first argument is true, will install an `at_exit` hook
+  # to write out the VM and IP databases.
+  #
   def initialize(at_exit_hook=true)
     @solved_mutex   = Mutex.new
     @serial         = false
@@ -30,6 +41,9 @@ class Scheduler
     end
   end
 
+  #
+  # Write out the VM and IP databases.
+  #
   def write_state 
     @vm.save_to_file
     # FIXME not the best place to do this, but we have additional problems if
@@ -67,9 +81,11 @@ class Scheduler
 
   #
   # Schedule a group of VMs for provision. This takes a group name, which is a
-  # string, a provisioner object, and a list of string dependencies. If
-  # anything in the dependencies list hasn't been pre-declared, it refuses to
-  # continue.
+  # string, an array of provisioner objects, and a list of string dependencies.
+  # If anything in the dependencies list hasn't been pre-declared, it refuses
+  # to continue.
+  #
+  # This method will return nil if the server group is already provisioned.
   #
   def schedule_provision(group_name, provisioner, dependencies=[])
     return nil if vm_groups[group_name]
@@ -126,6 +142,8 @@ class Scheduler
   # This call also installs a SIGINFO (Ctrl+T in the terminal on macs) and
   # SIGUSR2 handler which can be used to get information on the status of
   # what's solved and what's working. 
+  #
+  # Immediately returns if in threaded mode and the solver is already running.
   #
   def run
     # short circuit if we're not serial and already running
