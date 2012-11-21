@@ -59,6 +59,10 @@ class IPSupport < DelegateClass(Hash)
     @ip_assignment[role].push(ip)
   end
 
+  def delete_role(role)
+    @ip_assignment.delete(role)
+  end
+
   def get_role_ips(role)
     @ip_assignment[role] || []
   end
