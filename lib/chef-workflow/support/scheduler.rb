@@ -17,7 +17,7 @@ class Scheduler
 
   fancy_attr :serial
 
-  def initialize
+  def initialize(at_exit_hook=true)
     @solved_mutex   = Mutex.new
     @serial         = false
     @solver_thread  = nil
@@ -25,7 +25,13 @@ class Scheduler
     @waiters        = Set.new
     @queue          = Queue.new
     @vm             = VM.load_from_file || VM.new 
-    at_exit { @vm.save_to_file }
+    if at_exit_hook
+      at_exit { write_state }
+    end
+  end
+
+  def write_state 
+    @vm.save_to_file
   end
 
   #
