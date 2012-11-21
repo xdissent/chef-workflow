@@ -39,17 +39,17 @@ expect this to be corrected before the first release.
 Utility libraries:
 ==================
 
-* Chef::Workflow::ConfigureHelper - a mixin which provides easy-to-use methods
+* `Chef::Workflow::ConfigureHelper` - a mixin which provides easy-to-use methods
   of driving the various support configuration systems (see below).
-* AttrSupport - a small mixin to supply chef-style instance variable mutators;
+* `AttrSupport` - a small mixin to supply chef-style instance variable mutators;
   the kind that are a little more convenient to use with `instance_eval`'d
   blocks.
-* DebugSupport - mixin which defines a method called `if_debug` which is our
+* `DebugSupport` - mixin which defines a method called `if_debug` which is our
   gating mechanism for the `CHEF_WORKFLOW_DEBUG` environment variable.
-* GenericSupport - mixin which keeps the configuration interface consistent by
+* `GenericSupport` - mixin which keeps the configuration interface consistent by
   providing a `configure` class method that uses `instance_eval` and exposes a
   pre-configured object under `singleton` which can be manipulated.
-* KnifePluginSupport - mixin which contains a routine called
+* `KnifePluginSupport` - mixin which contains a routine called
   `init_knife_plugin` to simplify configuration of knife plugins, which can
   then be used as normal objects. Also configures a UI object with `StringIO`
   so that it can be communicated with optionally.
@@ -64,14 +64,14 @@ singletons, by accessing their `singleton` class method and configured with the
 If you are using `chef-workflow-tasklib`, most of the bits here as you have
 configured them can be described to you via `bundle exec rake chef:show_config`.
 
-* GeneralSupport - "General" configuration attributes that are global to the
+* `GeneralSupport` - "General" configuration attributes that are global to the
   entire system.
-* IPSupport - Database for associating IP addresses with a server group. See
+* `IPSupport` - Database for associating IP addresses with a server group. See
   discussion on the scheduler below for more information on server groups. This
   is generally not configured externally, but by tooling within the system.
-* KnifeSupport - Most configuration regarding chef lives here, and additional
+* `KnifeSupport` - Most configuration regarding chef lives here, and additional
   network access.
-* VagrantSupport - Specific bits related to using Vagrant, such as the box to
+* `VagrantSupport` - Specific bits related to using Vagrant, such as the box to
   be used for provisioning. 
 
 Scheduler and VM
@@ -125,13 +125,13 @@ commands are played in reverse with a `shutdown` call applied to them.
 Scheduler and VM libraries
 ==========================
 
-* Scheduler - this is the meat; if you're driving a new testing system such as
-  rspec, you'll want to get real familiar with the interface presented.
-* VM - marshalling and delegation interface. Most of this is exposed to the
+* `Scheduler` - this is the meat; if you're driving a new testing system such
+  as rspec, you'll want to get real familiar with the interface presented.
+* `VM` - marshalling and delegation interface. Most of this is exposed to the
   scheduler interface.
-* VM::VagrantProvisioner - creates a vagrant prison composed of n servers for a
-  server group with a unique host-only ip for each server.
-* VM::KnifeProvisioner - the provisioner equivalent of `knife bootstrap`, with
+* `VM::VagrantProvisioner` - creates a vagrant prison composed of n servers for
+  a server group with a unique host-only ip for each server.
+* `VM::KnifeProvisioner` - the provisioner equivalent of `knife bootstrap`, with
   additional sanity checks for both converge success and a waiting period for
   search indexing. On deprovision, deletes the nodes that were created. Will
   always try to bootstrap a group in parallel.
@@ -152,5 +152,5 @@ Credits
 -------
 
 This work is sponsored by [Hotel Tonight](http://hoteltonight.com) and is what
-we use to test our infrastructure internally. Primarily authored by Erik
-Hollensbe.
+we use to test our infrastructure internally. Primarily authored by [Erik
+Hollensbe](https://github.com/erikh).
