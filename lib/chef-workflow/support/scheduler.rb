@@ -32,6 +32,9 @@ class Scheduler
 
   def write_state 
     @vm.save_to_file
+    # FIXME not the best place to do this, but we have additional problems if
+    #       we don't
+    IPSupport.singleton.write
   end
 
   #
@@ -309,5 +312,6 @@ class Scheduler
     end
 
     @vm.clean
+    write_state
   end
 end

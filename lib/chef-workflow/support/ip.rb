@@ -80,7 +80,3 @@ end
 
 IPSupport.configure
 IPSupport.singleton.load
-
-at_exit do
-  IPSupport.singleton.write
-end
