@@ -109,6 +109,8 @@ class VM::KnifeProvisioner
     end
 
     t.each(&:join)
+
+    return true
   end
 
   #

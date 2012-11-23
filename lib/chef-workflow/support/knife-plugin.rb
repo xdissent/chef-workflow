@@ -28,7 +28,6 @@ module KnifePluginSupport
       StringIO.new('', 'r'),
       cli.config
     )
-    cli.configure_chef
 
     return cli
   end
