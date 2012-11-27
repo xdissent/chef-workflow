@@ -298,14 +298,18 @@ class Scheduler
   def deprovision_group(group_name, clean_state=true)
     provisioner = vm_groups[group_name]
 
-    if_debug do
-      $stderr.puts "Attempting to deprovision group #{group_name}"
-    end
+    # if we can't find the provisioner, we probably got asked to clean up
+    # something we never scheduled. Just ignore that.
+    if provisioner
+      if_debug do
+        $stderr.puts "Attempting to deprovision group #{group_name}"
+      end
 
-    provisioner.reverse.each do |this_prov|
-      unless this_prov.shutdown
-        if_debug do
-          $stderr.puts "Could not deprovision group #{group_name}."
+      provisioner.reverse.each do |this_prov|
+        unless this_prov.shutdown
+          if_debug do
+            $stderr.puts "Could not deprovision group #{group_name}."
+          end
         end
       end
     end
