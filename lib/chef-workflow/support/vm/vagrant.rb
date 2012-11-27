@@ -76,8 +76,10 @@ class VM::VagrantProvisioner
   # allocated IP addresses.
   #
   def shutdown
-    prison.configure_environment(:ui_class => ui_class)
-    prison.cleanup
+    if prison
+      prison.configure_environment(:ui_class => ui_class)
+      prison.cleanup
+    end
     IPSupport.singleton.delete_role(name)
   end
 end
