@@ -2,12 +2,14 @@ require 'fileutils'
 require 'erb'
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/general'
+require 'chef-workflow/support/debug'
 
 #
 # Configuration class for chef tooling and SSH interaction. Uses `GenericSupport`.
 #
 class KnifeSupport
   include GenericSupport
+  include DebugSupport
 
   # defaults, yo
   DEFAULTS = {
@@ -95,6 +97,15 @@ class KnifeSupport
         "@#{key}", 
         options.has_key?(key) ? options[key] : DEFAULTS[key]
       )
+    end
+  end
+
+  def method_missing(sym, *args)
+    if_debug(2) do
+      $stderr.puts "#{self.class.name}'s #{sym} method was referenced while trying to configure #{self.class.name}"
+      $stderr.puts "#{self.class.name} has not been configured to support this feature."
+      $stderr.puts "This is probably due to it being dynamically added from a rake task, and you're running the test suite."
+      $stderr.puts "It's probably harmless. Expect a better solution than this debug message soon."
     end
   end
 
