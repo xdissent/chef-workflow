@@ -1,0 +1,74 @@
+#!ruby
+
+require 'fileutils'
+
+unless $stdin.tty?
+  $stderr.puts "Please run this from a terminal in your git repository's root."
+  exit 1
+end
+
+if ARGV[0] =~ /^--?h(?:elp)?$/
+  $stderr.puts 'Creates the necessary files needed for bootstrapping chef-workflow.'
+  $stderr.puts 'Ignores any files that already exist.'
+  exit 1
+end
+
+def create(filename, content)
+  print "Trying to create #{filename}..."
+  if File.exist?(filename)
+    puts "ignoring, file already exists."
+  else
+    FileUtils.mkdir_p(File.dirname(filename)
+    File.binwrite(filename, content)
+    puts "done."
+  end
+end
+
+RAKEFILE_CONTENT <<-EOF
+require 'chef-workflow-tasklib'
+chef_workflow_task 'default'
+EOF
+
+CONFIG_CONTENT <<-EOF
+#
+# chef-workflow configuration. You can inspect the full set of configured values
+# with: `bundle exec rake chef:show_config`
+#
+configure_vagrant do
+  # if you wish to use a different box, supply it as a url here.
+  # box_url "http://files.vagrantup.com/precise32.box"
+end
+
+configure_knife do
+  #
+  # you shouldn't need to modify most of these! be sure to 'bundle exec rake
+  # chef:show_config' to see the standard values, as well as others that are
+  # not listed here.
+  #
+  # cookbooks_path 'cookbooks'
+  # roles_path 'roles'
+  # environments_path 'environments'
+  # data_bags_path 'data_bags'
+  # ssh_user 'vagrant'
+  # ssh_password 'vagrant'
+  # ssh_identity_file nil
+  # use_sudo true
+  # test_environment 'vagrant'
+end
+
+#
+# This is largely important for local VM work. If you're using something like
+# EC2 support (which determines its own IPs, for obvious reasons) these
+# configuration settings are meaningless.
+#
+configure_ips do
+  # this is treated as a /24, walked incrementally, and with vagrant at least,
+  # .1 is spoken for. You'll want 0 as your last octet. Expect this to be less
+  # fail in the future. :)
+  #
+  # subnet "10.10.10.0"
+end
+EOF
+
+create('Rakefile', RAKEFILE_CONTENT)
+create('lib/chef-workflow-config.rb', CONFIG_CONTENT)
