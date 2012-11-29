@@ -18,18 +18,23 @@ def create(filename, content)
   if File.exist?(filename)
     puts "ignoring, file already exists."
   else
-    FileUtils.mkdir_p(File.dirname(filename)
+    FileUtils.mkdir_p(File.dirname(filename))
     File.binwrite(filename, content)
     puts "done."
   end
 end
 
-RAKEFILE_CONTENT <<-EOF
+RAKEFILE_CONTENT = <<-EOF
 require 'chef-workflow-tasklib'
+#
+# If you want to change the tasks, remove this next line, and see the README:
+#
+# https://github.com/hoteltonight/chef-workflow-tasklib#picking-your-own-workflow
+#
 chef_workflow_task 'default'
 EOF
 
-CONFIG_CONTENT <<-EOF
+CONFIG_CONTENT = <<-EOF
 #
 # chef-workflow configuration. You can inspect the full set of configured values
 # with: `bundle exec rake chef:show_config`
