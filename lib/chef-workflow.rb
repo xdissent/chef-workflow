@@ -6,15 +6,6 @@ require 'chef-workflow/support/vagrant'
 require 'chef-workflow/support/ip'
 require 'chef-workflow/support/debug'
 
-$:.unshift 'lib'
-
-begin
-  require 'chef-workflow-config'
-rescue LoadError
-  $stderr.puts "There is no chef-workflow-config in your lib directory."
-  $stderr.puts "Please run chef-workflow-bootstrap or add one."
-end
-
 class Chef
   module Workflow
     #
@@ -62,3 +53,13 @@ if defined? Rake::DSL
     include Chef::Workflow::ConfigureHelper
   end
 end
+
+$:.unshift 'lib'
+
+begin
+  require 'chef-workflow-config'
+rescue LoadError
+  $stderr.puts "There is no chef-workflow-config in your lib directory."
+  $stderr.puts "Please run chef-workflow-bootstrap or add one."
+end
+
