@@ -154,7 +154,7 @@ class Scheduler
       p ["working:", @working]
     end
 
-    %w[USR2 INFO].each { |sig| trap(sig, &handler) }
+    %w[USR2 INFO].each { |sig| trap(sig, &handler) if Signal.list[sig] }
 
     queue_runner = lambda do
       run = true
