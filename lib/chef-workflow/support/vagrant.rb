@@ -6,7 +6,7 @@ require 'chef-workflow/support/generic'
 #
 class VagrantSupport
   # The default vagrant box we use for provisioning.
-  DEFAULT_VAGRANT_BOX = "http://files.vagrantup.com/precise64.box"
+  DEFAULT_VAGRANT_BOX = "http://files.vagrantup.com/precise32.box"
 
   # the calculated box, currently taken from the box_url. Expect this to change.
   attr_reader :box
