@@ -8,8 +8,8 @@ module AttrSupport
   #
   #     attr_writer :foo
   #
-  #     def foo(arg=nil)
-  #       if arg
+  #     def foo(*args)
+  #       if args.count > 0
   #         @foo = arg
   #       end
   #
@@ -19,8 +19,8 @@ module AttrSupport
   def fancy_attr(name)
     class_eval <<-EOF
       attr_writer :#{name}
-      def #{name}(arg=nil)
-        if arg
+      def #{name}(*args)
+        if args.count > 0
           @#{name} = arg
         end
 
