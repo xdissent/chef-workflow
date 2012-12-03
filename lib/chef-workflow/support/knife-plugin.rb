@@ -5,7 +5,6 @@ require 'stringio'
 #
 # Mixin to add methods to assist with creating knife plugins.
 #
-
 module KnifePluginSupport
 
   #

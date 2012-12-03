@@ -21,7 +21,7 @@ module AttrSupport
       attr_writer :#{name}
       def #{name}(*args)
         if args.count > 0
-          @#{name} = arg
+          @#{name} = args.first
         end
 
         @#{name}

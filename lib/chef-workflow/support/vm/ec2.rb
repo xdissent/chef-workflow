@@ -1,9 +1,8 @@
-require 'chef-workflwo/support/ec2'
+require 'chef-workflow/support/ec2'
 require 'chef-workflow/support/ip'
 require 'chef-workflow/support/vm'
 
 class VM::EC2Provisioner
-
   attr_accessor :name
 
   def initialize(name, number_of_servers)
@@ -21,13 +20,11 @@ class VM::EC2Provisioner
   end
 
   def startup(*args)
-    ec2.configure_aws
-    aws_ec2 = AWS::EC2.new
+    aws_ec2 = ec2.ec2_obj
   end
 
   def shutdown
-    ec2.configure_aws
-    aws_ec2 = AWS::EC2.new
+    aws_ec2 = ec2.ec2_obj
     IPSupport.singleton.delete_role(name)
   end
 end

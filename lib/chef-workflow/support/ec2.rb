@@ -5,7 +5,7 @@ require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
 
 class EC2Support
-
+  extend AttrSupport
   include DebugSupport
 
   fancy_attr :access_key_id
@@ -21,11 +21,13 @@ class EC2Support
     self.security_group_open_ports [22, 4000]
   end
 
-  def configure_aws
-    AWS.config(
+  def ec2_obj
+    ec2 = AWS::EC2.new(
       :access_key_id => ec2.access_key_id,
       :secret_access_key => ec2.secret_access_key
     )
+
+    ec2.regions[region]
   end
 
   #
@@ -40,8 +42,7 @@ class EC2Support
   # Creates a security group and saves it to the security_group_setting_path.
   #
   def create_security_group
-    configure_aws
-    aws_ec2 = AWS::EC2.new
+    aws_ec2 = ec2_obj
 
     name = nil
 
@@ -76,8 +77,7 @@ class EC2Support
   # asserts they exist. If they do not exist, it raises.
   #
   def assert_security_groups
-    configure_aws
-    aws_ec2 = AWS::EC2.new
+    aws_ec2 = ec2_obj
 
     if security_groups == :auto
       loaded_groups = Marshal.load(File.binread(security_group_setting_path)) rescue nil
