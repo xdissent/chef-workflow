@@ -1,7 +1,7 @@
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
-require 'chef-workflow/support/vm/vagrant'
 require 'chef-workflow/support/vm/ec2'
+require 'chef-workflow/support/vm/vagrant'
 
 #
 # General configuration, typically global to all chef-workflow related things.

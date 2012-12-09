@@ -1,7 +1,7 @@
 require 'aws'
-require 'chef-workflow/support/debug'
-require 'chef-workflow/support/knife'
 require 'chef-workflow/support/generic'
+require 'chef-workflow/support/general'
+require 'chef-workflow/support/debug'
 require 'chef-workflow/support/attr'
 
 class EC2Support
@@ -32,7 +32,7 @@ class EC2Support
         }
       else
         {
-          :access_key_id => ENV["AWS_ACCESS_KEY_ID"]
+          :access_key_id => ENV["AWS_ACCESS_KEY_ID"],
           :secret_access_key => ENV["AWS_SECRET_ACCESS_KEY"]
         }
       end
