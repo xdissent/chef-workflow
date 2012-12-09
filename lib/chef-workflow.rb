@@ -5,6 +5,7 @@ require 'chef-workflow/support/knife'
 require 'chef-workflow/support/vagrant'
 require 'chef-workflow/support/ip'
 require 'chef-workflow/support/debug'
+require 'chef-workflow/support/ec2'
 
 class Chef
   module Workflow
@@ -39,6 +40,13 @@ class Chef
       #
       def configure_ips(&block)
         IPSupport.configure(&block)
+      end
+
+      #
+      # Configure 'EC2Support'
+      #
+      def configure_ec2(&block)
+        EC2Support.configure(&block)
       end
     end
   end
