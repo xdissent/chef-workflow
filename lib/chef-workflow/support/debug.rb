@@ -3,6 +3,8 @@
 #
 module DebugSupport
 
+  CHEF_WORKFLOW_DEBUG_DEFAULT = 2
+
   #
   # Conditionally executes based on the level of debugging requested.
   #
@@ -35,8 +37,10 @@ module DebugSupport
   # off, will just execute `run_thing`.
   #
   def if_debug(minimum=1, else_block=nil)
-    $CHEF_WORKFLOW_DEBUG ||= ENV["CHEF_WORKFLOW_DEBUG"].to_i
-    $CHEF_WORKFLOW_DEBUG ||= 0
+    $CHEF_WORKFLOW_DEBUG ||= 
+      ENV.has_key?("CHEF_WORKFLOW_DEBUG") ? 
+        ENV["CHEF_WORKFLOW_DEBUG"].to_i : 
+        CHEF_WORKFLOW_DEBUG_DEFAULT
 
     if $CHEF_WORKFLOW_DEBUG >= minimum
       yield if block_given?
