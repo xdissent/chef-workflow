@@ -13,6 +13,7 @@ class KnifeSupport
 
   # defaults, yo
   DEFAULTS = {
+    :search_index_wait      => 60,
     :cookbooks_path         => File.join(Dir.pwd, 'cookbooks'),
     :chef_config_path       => File.join(GeneralSupport.singleton.workflow_dir, 'chef'),
     :knife_config_path      => File.join(GeneralSupport.singleton.workflow_dir, 'chef', 'knife.rb'),

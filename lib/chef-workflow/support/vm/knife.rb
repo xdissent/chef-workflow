@@ -128,7 +128,7 @@ class VM::KnifeProvisioner
       map { |s| s.gsub(/\[/, 's:"').gsub(/\]/, '"') }.
       join(" AND ")
 
-    Timeout.timeout(60) do
+    Timeout.timeout(KnifeSupport.singleton.search_index_wait) do
       until unchecked_node_names.empty?
         node_name = unchecked_node_names.shift
         if_debug(3) do
@@ -144,8 +144,8 @@ class VM::KnifeProvisioner
           unchecked_node_names << node_name
         end
         
-        # unfortunately if this isn't here you might as well issue kill -9 to the
-        # rake process
+        # unfortunately if this isn't here you might as well issue kill -9 to
+        # the rake process
         sleep 0.3
       end
     end
