@@ -59,6 +59,14 @@ configure_knife do
   # ssh_identity_file nil
   # use_sudo true
   # test_environment 'vagrant'
+  
+  # search_index_wait is used for provisioning with VM::KnifeProvisioner. After
+  # provisioning, it waits a set value of seconds (60 default) for the metadata
+  # to appear in chef's index. If this fails to appear in this time an
+  # exception will be thrown. If you have a slow chef server or find yourself
+  # hitting this limit a lot, increase this value.
+  #
+  # search_index_wait 60
 end
 
 #
