@@ -24,18 +24,28 @@ class Scheduler
   #
   fancy_attr :serial
 
+  ##
+  # :attr:
+  #
+  # Ignore exceptions while deprovisioning. Default is false.
+  #
+
+  fancy_attr :force_deprovision
+
   #
   # Constructor. If the first argument is true, will install an `at_exit` hook
   # to write out the VM and IP databases.
   #
   def initialize(at_exit_hook=true)
-    @solved_mutex   = Mutex.new
-    @serial         = false
-    @solver_thread  = nil
-    @working        = { }
-    @waiters        = Set.new
-    @queue          = Queue.new
-    @vm             = VM.load_from_file || VM.new 
+    @force_deprovision  = false
+    @solved_mutex       = Mutex.new
+    @serial             = false
+    @solver_thread      = nil
+    @working            = { }
+    @waiters            = Set.new
+    @queue              = Queue.new
+    @vm                 = VM.load_from_file || VM.new 
+
     if at_exit_hook
       at_exit { write_state }
     end
@@ -305,11 +315,25 @@ class Scheduler
         $stderr.puts "Attempting to deprovision group #{group_name}"
       end
 
-      provisioner.reverse.each do |this_prov|
+      perform_deprovision = lambda do |this_prov|
         unless this_prov.shutdown
           if_debug do
             $stderr.puts "Could not deprovision group #{group_name}."
           end
+        end
+      end
+
+      provisioner.reverse.each do |this_prov|
+        if @force_deprovision
+          begin
+            perform_deprovision.call(this_prov)
+          rescue
+            if_debug do
+              $stderr.puts "Deprovision #{this_prov.class.name}/#{group_name} had errors, barrelling on..."
+            end
+          end
+        else
+          perform_deprovision.call(this_prov)
         end
       end
     end
