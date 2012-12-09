@@ -11,6 +11,7 @@ class EC2Support
   fancy_attr :access_key_id
   fancy_attr :secret_access_key
   fancy_attr :ami
+  fancy_attr :instance_type
   fancy_attr :region
   fancy_attr :ssh_key
   fancy_attr :security_groups
