@@ -346,18 +346,18 @@ class Scheduler
   end
 
   #
-  # Instruct all the provisioners to tear down. Calls #stop as its first action.
+  # Instruct all provisioners except ones in the exception list to tear down.
+  # Calls #stop as its first action.
   #
   # This is always done serially. For sanity.
   #
-  def teardown
+  def teardown(exceptions=[])
     stop
 
-    (solved + vm_working).each do |group_name|
-      deprovision_group(group_name, false) # clean this after everything finishes
+    ((solved + vm_working) - exceptions.to_set).each do |group_name|
+      deprovision_group(group_name) # clean this after everything finishes
     end
 
-    @vm.clean
     write_state
   end
 end

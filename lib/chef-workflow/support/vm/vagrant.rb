@@ -46,10 +46,19 @@ class VM
     end
 
     #
+    # helper to bootstrap vagrant requirements.
+    #
+    def bootstrap_vagrant_ipsupport
+      IPSupport.singleton.seed_vagrant_ips
+    end
+
+    #
     # Provision a group of servers. If successful, returns an array of the ips
     # allocated for the group. Ignores incoming arguments.
     #
     def startup(*args)
+      bootstrap_vagrant_ipsupport
+
       IPSupport.singleton.delete_role(name)
 
       @prison = Vagrant::Prison.new(Dir.mktmpdir, false)
