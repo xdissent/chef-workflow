@@ -282,7 +282,9 @@ class Scheduler
     dependent_items = vm_dependencies.partition { |k,v| v.include?(group_name) }.first.map(&:first)
 
     if_debug do
-      $stderr.puts "Trying to terminate #{group_name}, found #{dependent_items.inspect} depending on it"
+      if dependent_items.length > 0
+        $stderr.puts "Trying to terminate #{group_name}, found #{dependent_items.inspect} depending on it"
+      end
     end
 
     @solved_mutex.synchronize do

@@ -23,7 +23,6 @@ class EC2Support
   end
 
   def ec2_obj
-
     args = 
       if access_key_id and secret_access_key
         {

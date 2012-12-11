@@ -1,5 +1,4 @@
 require 'chef-workflow/support/debug'
-require 'chef-workflow/support/vm'
 require 'chef-workflow/support/knife'
 require 'chef-workflow/support/knife-plugin'
 require 'chef/node'
