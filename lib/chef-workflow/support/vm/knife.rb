@@ -76,9 +76,11 @@ class VM
     # a server group.
     #
     def startup(*args)
-      @ips = args.first.first #argh
+      @ips = args.first #argh
       raise "This provisioner is unnamed, cannot continue" unless name
       raise "This provisioner requires ip addresses which were not supplied" unless ips
+
+      @run_list ||= ["role[#{name}]"]
 
       t = []
       ips.each_with_index do |ip, index|
@@ -169,8 +171,6 @@ class VM
       args += %W[--template-file #{template_file}]  if template_file
       args += %W[-p #{port}]                        if port 
       args += %W[-E #{environment}]                 if environment
-
-      @run_list ||= ["role[#{name}]"]
 
       args += %W[-r '#{run_list.join(",")}']
       args += %W[-N '#{node_name}']

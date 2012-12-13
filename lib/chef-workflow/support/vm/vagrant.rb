@@ -77,7 +77,7 @@ class VM
 
       prison.construct(:ui_class => ui_class)
 
-      return prison.start ? [ips] : false
+      return prison.start ? ips : false
     end
 
     #

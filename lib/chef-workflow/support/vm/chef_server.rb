@@ -10,7 +10,7 @@ class VM
     attr_accessor :name
 
     def startup(*args)
-      ip = args.first.first.first # arg
+      ip = args.first.first #arg
 
       raise "No IP to use for the chef server" unless ip
 

@@ -20,6 +20,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'vagrant-prison'
   gem.add_dependency 'chef'
   gem.add_dependency 'aws-sdk'
+  gem.add_dependency 'net-ssh'
 
   gem.add_development_dependency 'rdoc'
   gem.add_development_dependency 'rake'

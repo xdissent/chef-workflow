@@ -39,6 +39,7 @@ class Scheduler
   def initialize(at_exit_hook=true)
     @force_deprovision  = false
     @solved_mutex       = Mutex.new
+    @waiters_mutex      = Mutex.new
     @serial             = false
     @solver_thread      = nil
     @working            = { }
@@ -98,7 +99,10 @@ class Scheduler
   # This method will return nil if the server group is already provisioned.
   #
   def schedule_provision(group_name, provisioner, dependencies=[])
+    $stderr.puts "scheduling #{group_name} part 1"
+    $stderr.puts vm_groups[group_name].inspect
     return nil if vm_groups[group_name]
+    $stderr.puts "scheduling #{group_name} part 2"
     provisioner = [provisioner] unless provisioner.kind_of?(Array)
     provisioner.each { |x| x.name = group_name }
     vm_groups[group_name] = provisioner
@@ -108,7 +112,11 @@ class Scheduler
     end
 
     vm_dependencies[group_name] = dependencies.to_set
-    @waiters.add(group_name)
+    $stderr.puts "scheduling #{group_name}"
+    $stderr.flush
+    @waiters_mutex.synchronize do
+      @waiters.add(group_name)
+    end
   end
 
   #
@@ -133,8 +141,10 @@ class Scheduler
   #
   def with_timeout(do_loop=true)
     Timeout.timeout(10) do
-      if @working.values.reject(&:alive?).size > 0
-        @working.select { |k,v| !v.alive? }.values.map(&:join)
+      dead_working = @working.values.reject(&:alive?)
+      if dead_working.size > 0
+        $stderr.puts "Joining dead threads: #{dead_working.inspect}"
+        dead_working.map(&:join)
       end
 
       yield
@@ -156,12 +166,15 @@ class Scheduler
   # Immediately returns if in threaded mode and the solver is already running.
   #
   def run
+    p @waiters
+    puts @serial
     # short circuit if we're not serial and already running
     return if @solver_thread and !@serial
 
-    handler = lambda do
+    handler = lambda do |*args|
       p ["solved:", solved]
       p ["working:", @working]
+      p ["waiting:", @waiters]
     end
 
     %w[USR2 INFO].each { |sig| trap(sig, &handler) if Signal.list[sig] }
@@ -170,17 +183,28 @@ class Scheduler
       run = true
 
       while run
+        service_resolved_waiters
+
         ready = []
 
         if @queue.empty?
           if @serial
             return
           else
-            with_timeout { ready << @queue.shift if ready.empty? }
+            with_timeout do
+              $stderr.puts "queue shift w/ timeout"
+              # this is where most of the execution time is spent, so ensure
+              # waiters get considered here.
+              service_resolved_waiters
+
+              $stderr.puts "after service_resolved_waiters"
+              ready << @queue.shift
+            end
           end
         end
 
         while !@queue.empty?
+          $stderr.puts "queue shift"
           ready << @queue.shift
         end
 
@@ -192,11 +216,10 @@ class Scheduler
               vm_working.delete(r)
             end
           else
+            $stderr.puts "run is set to false"
             run = false
           end
         end
-
-        service_resolved_waiters if run
       end
     end
 
@@ -207,6 +230,20 @@ class Scheduler
       @solver_thread = Thread.new do
         with_timeout(false) { service_resolved_waiters }
         queue_runner.call
+      end
+
+      # we depend on at_exit hooks being fired, and Thread#abort_on_exception
+      # doesn't fire them. This solution bubbles up the exceptions in a similar
+      # fashion without actually sacrificing the at_exit functionality.
+      Thread.new do
+        begin
+          @solver_thread.join
+        rescue Exception => e
+          $stderr.puts "Solver thread encountered an exception:"
+          $stderr.puts "#{e.class.name}: #{e.message}"
+          $stderr.puts e.backtrace.join("\n")
+          Kernel.exit 1
+        end
       end
     end
   end
@@ -230,38 +267,53 @@ class Scheduler
   # provision yet because of unresolved dependencies, can be executed.
   #
   def service_resolved_waiters
-    @waiters -= (@working.keys.to_set + solved)
+    @waiters_mutex.synchronize do
+      @waiters -= (@working.keys.to_set + solved)
+    end
 
-    @waiters.each do |group_name|
-      if solved & vm_dependencies[group_name] == vm_dependencies[group_name]
-        if_debug do
-          $stderr.puts "Provisioning #{group_name}"
-        end
+    $stderr.puts "service resolved: #{@waiters.inspect}"
 
-        provisioner = vm_groups[group_name]
-
-        provision_block = lambda do
-          # FIXME maybe a way to specify initial args?
-          args = nil
-          provisioner.each do |this_prov|
-            unless args = this_prov.startup(args)
-              raise "Could not provision #{group_name}"
-            end
+    waiter_iteration = lambda do
+      @waiters.each do |group_name|
+        if (solved & vm_dependencies[group_name]) == vm_dependencies[group_name]
+          if_debug do
+            $stderr.puts "Provisioning #{group_name}"
           end
-          @queue << group_name
-        end
 
-        vm_working.add(group_name)
+          provisioner = vm_groups[group_name]
+          $stderr.puts provisioner.inspect
 
-        if @serial
-          # HACK: just give the working check something that will always work.
-          #       Probably should just mock it.
-          @working[group_name] = Thread.new { sleep }
-          provision_block.call
-        else
-          @working[group_name] = Thread.new(&provision_block)
+          provision_block = lambda do
+            # FIXME maybe a way to specify initial args?
+            args = nil
+            provisioner.each do |this_prov|
+              unless args = this_prov.startup(args)
+                $stderr.puts "Could not provision #{group_name}"
+                raise "Could not provision #{group_name}"
+              end
+            end
+            $stderr.puts "adding #{group_name} to solved queue"
+            @queue << group_name
+          end
+
+          vm_working.add(group_name)
+
+          if @serial
+            # HACK: just give the working check something that will always work.
+            #       Probably should just mock it.
+            @working[group_name] = Thread.new { sleep }
+            provision_block.call
+          else
+            @working[group_name] = Thread.new(&provision_block)
+          end
         end
       end
+    end
+
+    if @serial
+      waiter_iteration.call
+    else
+      @waiters_mutex.synchronize(&waiter_iteration)
     end
   end
 
@@ -329,9 +381,10 @@ class Scheduler
         if @force_deprovision
           begin
             perform_deprovision.call(this_prov)
-          rescue
+          rescue RuntimeError => e
             if_debug do
-              $stderr.puts "Deprovision #{this_prov.class.name}/#{group_name} had errors, barrelling on..."
+              $stderr.puts "Deprovision #{this_prov.class.name}/#{group_name} had errors:"
+              $stderr.puts "#{e.message}"
             end
           end
         else
@@ -342,6 +395,7 @@ class Scheduler
 
     if clean_state
       solved.delete(group_name)
+      vm_working.delete(group_name)
       vm_dependencies.delete(group_name)
       vm_groups.delete(group_name)
     end
@@ -356,7 +410,7 @@ class Scheduler
   def teardown(exceptions=[])
     stop
 
-    ((solved + vm_working) - exceptions.to_set).each do |group_name|
+    (vm_groups.keys.to_set - exceptions.to_set).each do |group_name|
       deprovision_group(group_name) # clean this after everything finishes
     end
 

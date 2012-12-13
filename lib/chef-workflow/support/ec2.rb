@@ -16,10 +16,12 @@ class EC2Support
   fancy_attr :ssh_key
   fancy_attr :security_groups
   fancy_attr :security_group_open_ports
+  fancy_attr :provision_wait
 
   def initialize
     self.security_groups :auto
     self.security_group_open_ports [22, 4000]
+    self.provision_wait 300
   end
 
   def ec2_obj
@@ -63,7 +65,8 @@ class EC2Support
         $stderr.puts "Seeing if security group name #{name} is taken"
       end
 
-      break unless aws_ec2.security_groups[name]
+      break unless aws_ec2.security_groups[name].exists?
+      sleep 0.3
     end
 
     group = aws_ec2.security_groups.create(name)
@@ -73,8 +76,12 @@ class EC2Support
       group.authorize_ingress(:udp, port)
     end
 
+    group.authorize_ingress(:tcp, (0..65535), group)
+    group.authorize_ingress(:udp, (0..65535), group)
+
     # XXX I think the name should be enough, but maybe this'll cause a problem.
     File.binwrite(security_group_setting_path, Marshal.dump([name]))
+    return [name]
   end
 
   #
@@ -99,14 +106,32 @@ class EC2Support
         self.security_groups loaded_groups
         assert_security_groups
       else
-        create_security_group
+        self.security_groups create_security_group
       end
     else
       self.security_groups = [security_groups] unless security_groups.kind_of?(Array)
 
       self.security_groups.each do |group|
+        #
+        # just retry this until it works -- some stupid flexible proxy in aws-sdk will bark about a missing method otherwise.
+        #
+
+        begin
+          aws_ec2.security_groups[group]
+        rescue
+          sleep 1
+          retry
+        end
+
         raise "EC2 security group #{group} does not exist and it should." unless aws_ec2.security_groups[group]
       end
+    end
+  end
+
+  def destroy_security_group
+    if File.exist?(security_group_setting_path)
+      group_name = Marshal.load(File.binread(security_group_setting_path)).first
+      ec2_obj.security_groups[group_name].delete
     end
   end
 
