@@ -381,7 +381,7 @@ class Scheduler
         if @force_deprovision
           begin
             perform_deprovision.call(this_prov)
-          rescue RuntimeError => e
+          rescue Exception => e
             if_debug do
               $stderr.puts "Deprovision #{this_prov.class.name}/#{group_name} had errors:"
               $stderr.puts "#{e.message}"
