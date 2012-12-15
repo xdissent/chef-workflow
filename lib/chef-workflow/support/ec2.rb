@@ -85,6 +85,13 @@ class EC2Support
   end
 
   #
+  # Loads any stored security groups. Returns nil if it can't.
+  #
+  def load_security_group
+    Marshal.load(File.binread(security_group_setting_path)) rescue nil
+  end
+
+  #
   # Ensures security groups exist.
   #
   # If @security_groups is :auto, creates one and sets it up with the
@@ -97,8 +104,7 @@ class EC2Support
     aws_ec2 = ec2_obj
 
     if security_groups == :auto
-      loaded_groups = Marshal.load(File.binread(security_group_setting_path)) rescue nil
-
+      loaded_groups = load_security_group
 
       # this will make it hit the second block everytime from now on (and
       # bootstrap it recursively)
@@ -128,10 +134,30 @@ class EC2Support
     end
   end
 
+  def find_secgroup_running_instances(group_name)
+    # exponential complexity with API calls? NO PROBLEM
+    ec2_obj.instances.select do |i| 
+      (i.status == :running || i.status == :pending) &&
+        i.security_groups.find { |s| s.name == group_name }
+    end
+  end
+
   def destroy_security_group
     if File.exist?(security_group_setting_path)
       group_name = Marshal.load(File.binread(security_group_setting_path)).first
-      ec2_obj.security_groups[group_name].delete
+
+      until (instances = find_secgroup_running_instances(group_name)).empty?
+        if_debug(1) do
+          $stderr.puts "Trying to destroy security group #{group_name}, but instances are still bound to it."
+          $stderr.puts instances.map(&:id).inspect
+          $stderr.puts "Terminating instances, sleeping, and trying again."
+        end
+        
+        instances.each(&:terminate)
+        sleep 10
+      end
+
+      ec2_obj.security_groups.find { |g| g.name == group_name }.delete
     end
   end
 
