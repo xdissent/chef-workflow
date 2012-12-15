@@ -89,8 +89,6 @@ class VM
         end
       end
 
-      p instances
-
       ip_addresses = []
       
       instances.each do |instance|

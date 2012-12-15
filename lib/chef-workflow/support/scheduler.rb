@@ -99,10 +99,7 @@ class Scheduler
   # This method will return nil if the server group is already provisioned.
   #
   def schedule_provision(group_name, provisioner, dependencies=[])
-    $stderr.puts "scheduling #{group_name} part 1"
-    $stderr.puts vm_groups[group_name].inspect
     return nil if vm_groups[group_name]
-    $stderr.puts "scheduling #{group_name} part 2"
     provisioner = [provisioner] unless provisioner.kind_of?(Array)
     provisioner.each { |x| x.name = group_name }
     vm_groups[group_name] = provisioner
@@ -112,8 +109,6 @@ class Scheduler
     end
 
     vm_dependencies[group_name] = dependencies.to_set
-    $stderr.puts "scheduling #{group_name}"
-    $stderr.flush
     @waiters_mutex.synchronize do
       @waiters.add(group_name)
     end
@@ -143,7 +138,6 @@ class Scheduler
     Timeout.timeout(10) do
       dead_working = @working.values.reject(&:alive?)
       if dead_working.size > 0
-        $stderr.puts "Joining dead threads: #{dead_working.inspect}"
         dead_working.map(&:join)
       end
 
@@ -166,8 +160,6 @@ class Scheduler
   # Immediately returns if in threaded mode and the solver is already running.
   #
   def run
-    p @waiters
-    puts @serial
     # short circuit if we're not serial and already running
     return if @solver_thread and !@serial
 
@@ -192,19 +184,15 @@ class Scheduler
             return
           else
             with_timeout do
-              $stderr.puts "queue shift w/ timeout"
               # this is where most of the execution time is spent, so ensure
               # waiters get considered here.
               service_resolved_waiters
-
-              $stderr.puts "after service_resolved_waiters"
               ready << @queue.shift
             end
           end
         end
 
         while !@queue.empty?
-          $stderr.puts "queue shift"
           ready << @queue.shift
         end
 
@@ -216,7 +204,6 @@ class Scheduler
               vm_working.delete(r)
             end
           else
-            $stderr.puts "run is set to false"
             run = false
           end
         end
@@ -271,8 +258,6 @@ class Scheduler
       @waiters -= (@working.keys.to_set + solved)
     end
 
-    $stderr.puts "service resolved: #{@waiters.inspect}"
-
     waiter_iteration = lambda do
       @waiters.each do |group_name|
         if (solved & vm_dependencies[group_name]) == vm_dependencies[group_name]
@@ -281,18 +266,16 @@ class Scheduler
           end
 
           provisioner = vm_groups[group_name]
-          $stderr.puts provisioner.inspect
 
           provision_block = lambda do
             # FIXME maybe a way to specify initial args?
             args = nil
             provisioner.each do |this_prov|
               unless args = this_prov.startup(args)
-                $stderr.puts "Could not provision #{group_name}"
-                raise "Could not provision #{group_name}"
+                $stderr.puts "Could not provision #{group_name} with provisioner #{this_prov.class.name}"
+                raise "Could not provision #{group_name} with provisioner #{this_prov.class.name}"
               end
             end
-            $stderr.puts "adding #{group_name} to solved queue"
             @queue << group_name
           end
 
