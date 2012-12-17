@@ -24,7 +24,8 @@ class KnifeSupport
     :ssh_password           => "vagrant",
     :ssh_identity_file      => nil,
     :use_sudo               => true,
-    :test_environment       => "vagrant"
+    :test_environment       => "vagrant",
+    :test_recipes           => []
   }
 
   DEFAULTS[:knife_config_template] = <<-EOF
