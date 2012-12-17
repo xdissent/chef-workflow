@@ -137,7 +137,7 @@ class EC2Support
   def find_secgroup_running_instances(group_name)
     # exponential complexity with API calls? NO PROBLEM
     ec2_obj.instances.select do |i| 
-      (i.status == :running || i.status == :pending) &&
+      i.status != :terminated &&
         i.security_groups.find { |s| s.name == group_name }
     end
   end
@@ -153,7 +153,10 @@ class EC2Support
           $stderr.puts "Terminating instances, sleeping, and trying again."
         end
         
-        instances.each(&:terminate)
+        instances.each do |i|
+          i.terminate rescue nil
+        end
+
         sleep 10
       end
 
