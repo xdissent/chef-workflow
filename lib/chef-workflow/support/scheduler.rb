@@ -121,6 +121,7 @@ class Scheduler
   #
   def wait_for(*dependencies)
     return nil if @serial
+    return nil if dependencies.empty?
 
     dep_set = dependencies.to_set
     until dep_set & solved == dep_set
