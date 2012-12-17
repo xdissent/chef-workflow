@@ -52,6 +52,9 @@ class VM
     attr_accessor :run_list
     # the name of this server group.
     attr_accessor :name
+    # perform the solr check to ensure the instance has converged and its
+    # metadata is ready for searching.
+    attr_accessor :solr_check
 
     # constructor.
     def initialize
@@ -65,6 +68,7 @@ class VM
       @template_file  = nil
       @environment    = nil
       @node_names     = []
+      @solr_check     = true
     end
 
     #
@@ -91,7 +95,7 @@ class VM
 
       t.each(&:join)
 
-      return check_nodes
+      return solr_check ? check_nodes : true
     end
 
     #
