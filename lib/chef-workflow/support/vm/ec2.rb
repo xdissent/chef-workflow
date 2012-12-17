@@ -45,7 +45,8 @@ class VM
         :count            => @number_of_servers,
         :image_id         => ec2.ami,
         :security_groups  => ec2.security_groups,
-        :key_name         => ec2.ssh_key
+        :key_name         => ec2.ssh_key,
+        :instance_type    => ec2.instance_type
       )
 
       #
