@@ -176,7 +176,7 @@ class VM
       args += %W[-p #{port}]                        if port 
       args += %W[-E #{environment}]                 if environment
 
-      args += %W[-r '#{run_list.join(",")}']
+      args += %W[-r #{run_list.join(",")}]
       args += %W[-N '#{node_name}']
       args += [ip]
 
