@@ -73,6 +73,7 @@ configured them can be described to you via `bundle exec rake chef:show_config`.
   network access.
 * `VagrantSupport` - Specific bits related to using Vagrant, such as the box to
   be used for provisioning. 
+* `EC2Support` - bits related to driving AWS EC2.
 
 Scheduler and VM
 ----------------
@@ -131,10 +132,14 @@ Scheduler and VM libraries
   scheduler interface.
 * `VM::VagrantProvisioner` - creates a vagrant prison composed of n servers for
   a server group with a unique host-only ip for each server.
+* `VM::EC2Provisioner` - creates a group of servers provisioned on EC2.
 * `VM::KnifeProvisioner` - the provisioner equivalent of `knife bootstrap`, with
   additional sanity checks for both converge success and a waiting period for
   search indexing. On deprovision, deletes the nodes that were created. Will
   always try to bootstrap a group in parallel.
+* `VM::ChefServerProvisioner` - similar to `VM::KnifeProvisioner`, it wraps the
+  [knife-server](https://github.com/fnichol/knife-server) toolkit to create a
+  chef server.
 
 Contributing
 ------------
