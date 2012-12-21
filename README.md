@@ -2,9 +2,9 @@ Chef Workflow Toolkit
 ---------------------
 
 This code is the common base of
-[chef-workflow-tasklib](https://github.com/hoteltonight/chef-workflow-tasklib)
+[chef-workflow-tasklib](https://github.com/chef-workflow/chef-workflow-tasklib)
 and
-[chef-workflow-testlib](https://github.com/hoteltonight/chef-workflow-testlib).
+[chef-workflow-testlib](https://github.com/chef-workflow/chef-workflow-testlib).
 Unless you are looking to create extensions to these two systems, or use the
 libraries contained within, you would be better served (with rare exception) by
 visiting these two projects for your testing and workflow needs.
@@ -115,7 +115,7 @@ Server Groups
 The VM system itself is a mapping of server groups to an array of provisioning
 "commands", which are implemented as classes with a consistent interface
 (visitors). A provisioning command may create a [vagrant
-prison](https://github.com/hoteltonight/vagrant-prison) which contains all the
+prison](https://github.com/chef-workflow/vagrant-prison) which contains all the
 servers for that server group, complete with assigning them a host-only
 interface and storing that with `IPSupport` so that it can be retrieved by
 other bits of the test system or task system. Another provisioning command may
@@ -156,6 +156,6 @@ without rationale will be rejected immediately.
 Credits
 -------
 
-This work is sponsored by [Hotel Tonight](http://hoteltonight.com) and is what
-we use to test our infrastructure internally. Primarily authored by [Erik
-Hollensbe](https://github.com/erikh).
+This work was partially sponsored by [Hotel Tonight](http://hoteltonight.com)
+and is what they use to test our infrastructure internally. Primarily authored by
+[Erik Hollensbe](https://github.com/erikh).
