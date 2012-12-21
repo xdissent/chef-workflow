@@ -19,7 +19,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'vagrant-prison', '~> 0.1.0'
   gem.add_dependency 'chef', '~> 10.0'
-  gem.add_dependency 'aws-sdk' '~> 1.7.0'
+  gem.add_dependency 'aws-sdk', '~> 1.7.0'
   gem.add_dependency 'net-ssh', '~> 2.6.0'
 
   gem.add_development_dependency 'rdoc'
