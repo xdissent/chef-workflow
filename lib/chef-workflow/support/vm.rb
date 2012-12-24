@@ -67,5 +67,5 @@ end
 
 # XXX require all the provisioners -- marshal will blow up unless this is done.
 Dir[File.join(File.expand_path(File.dirname(__FILE__)), 'vm', '*')].each do |x|
-  require x
+  require x if File.file?(x)
 end
