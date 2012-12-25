@@ -187,7 +187,7 @@ class VM
         # knife bootstrap is the honey badger when it comes to exit status.
         # We can't rely on it, so we examine the run_list of the node instead
         # to ensure it converged.
-        run_list_size = Chef::Node.load(node_name).run_list.to_a.size
+        run_list_size = Chef::Node.load(node_name).run_list.to_a.size rescue 0
         unless run_list_size > 0
           puts bootstrap_cli.ui.stdout.string
           puts bootstrap_cli.ui.stderr.string
