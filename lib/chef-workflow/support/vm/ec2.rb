@@ -142,5 +142,9 @@ class VM
       IPSupport.singleton.delete_role(name)
       return true
     end
+
+    def report
+      ["#{@number_of_servers} servers; instance ids: #{@instance_ids.join(" ")}"]
+    end
   end
 end

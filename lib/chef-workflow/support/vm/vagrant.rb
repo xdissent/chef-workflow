@@ -91,5 +91,9 @@ class VM
       end
       IPSupport.singleton.delete_role(name)
     end
+
+    def report
+      ["#{@number_of_servers} servers; prison dir: #{@prison.dir}"]
+    end
   end
 end

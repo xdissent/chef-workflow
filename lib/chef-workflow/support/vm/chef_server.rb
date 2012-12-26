@@ -27,5 +27,9 @@ class VM
     def shutdown
       true
     end
+
+    def report
+      [name]
+    end
   end
 end

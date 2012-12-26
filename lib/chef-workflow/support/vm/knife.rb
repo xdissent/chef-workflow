@@ -213,5 +213,15 @@ class VM
     def node_delete(node_name)
       init_knife_plugin(Chef::Knife::NodeDelete, [node_name, '-y']).run
     end
+
+    def report
+      res = ["nodes:"]
+
+      @ips.each_with_index do |ip, i|
+        res += ["\t#{@node_names[i]}: #{ip}"]
+      end
+
+      return res
+    end
   end
 end
