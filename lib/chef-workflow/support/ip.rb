@@ -1,4 +1,3 @@
-require 'delegate'
 require 'fileutils'
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
