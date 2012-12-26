@@ -8,7 +8,7 @@ ENV["TEST_CHEF_SUBNET"] ||= "10.10.10.0"
 #
 # IP allocation database. Uses `GenericSupport`.
 #
-class IPSupport < DelegateClass(Hash)
+class IPSupport
   extend AttrSupport
 
   ##
@@ -30,7 +30,6 @@ class IPSupport < DelegateClass(Hash)
     @subnet = subnet
     reset
     @ip_file = ip_file
-    super(@ip_assignment)
   end
 
   #
@@ -101,6 +100,13 @@ class IPSupport < DelegateClass(Hash)
   #
   def delete_role(role)
     @ip_assignment.delete(role)
+  end
+
+  #
+  # Get all the known roles
+  #
+  def roles
+    @ip_assignment.keys
   end
 
   #
