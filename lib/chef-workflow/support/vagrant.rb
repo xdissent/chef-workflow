@@ -40,4 +40,4 @@ module ChefWorkflow
   end
 end
 
-VagrantSupport.configure
+ChefWorkflow::VagrantSupport.configure

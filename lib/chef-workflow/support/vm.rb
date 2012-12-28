@@ -30,7 +30,7 @@ module ChefWorkflow
       vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
 
       if File.file?(vm_file)
-        return Marshal.load(File.binread(vm_file || DEFAULT_VM_FILE))
+        return Marshal.load(File.binread(vm_file))
       end
 
       return nil
