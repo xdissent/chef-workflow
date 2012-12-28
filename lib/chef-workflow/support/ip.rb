@@ -4,39 +4,11 @@ require 'chef-workflow/support/attr'
 
 ENV["TEST_CHEF_SUBNET"] ||= "10.10.10.0"
 
-<<<<<<< HEAD
-#
-# IP allocation database. Uses `GenericSupport`.
-#
-class IPSupport
-  extend AttrSupport
-
-  ##
-  # :attr:
-  #
-  # The subnet used for calculating assignable IP addresses. You really want to
-  # set `TEST_CHEF_SUBNET` in your environment instead of changing this.
-  #
-  fancy_attr :subnet
-
-  ##
-  # :attr:
-  #
-  # The location of the ip database.
-  #
-  fancy_attr :ip_file
-
-  def initialize(subnet=ENV["TEST_CHEF_SUBNET"], ip_file=File.join(Dir.pwd, '.chef-workflow', 'ips'))
-    @subnet = subnet
-    reset
-    @ip_file = ip_file
-  end
-=======
 module ChefWorkflow
   #
   # IP allocation database. Uses `GenericSupport`.
   #
-  class IPSupport < DelegateClass(Hash)
+  class IPSupport
     extend ChefWorkflow::AttrSupport
 
     ##
@@ -58,7 +30,6 @@ module ChefWorkflow
       @subnet = subnet
       reset
       @ip_file = ip_file
-      super(@ip_assignment)
     end
 
     #
@@ -67,7 +38,6 @@ module ChefWorkflow
     def reset
       @ip_assignment = { }
     end
->>>>>>> refactors
 
     #
     # Loads the IP database from disk. Location is based on the `ip_file` accessor.
