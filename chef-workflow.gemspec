@@ -5,7 +5,7 @@ require 'chef-workflow/version'
 
 Gem::Specification.new do |gem|
   gem.name          = "chef-workflow"
-  gem.version       = Chef::Workflow::VERSION
+  gem.version       = ChefWorkflow::VERSION
   gem.authors       = ["Erik Hollensbe"]
   gem.email         = ["erik+github@hollensbe.org"]
   gem.description   = %q{A comprehensive rake-based workflow for chef}
