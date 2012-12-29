@@ -1,6 +1,5 @@
-require 'chef-workflow/support/knife'
+require 'chef-workflow/support/debug'
 require 'chef-workflow/support/knife-plugin'
-require 'chef/knife/server_bootstrap_standalone'
 
 module ChefWorkflow
   class VM
@@ -11,6 +10,9 @@ module ChefWorkflow
       attr_accessor :name
 
       def startup(*args)
+        require 'chef-workflow/support/knife'
+        require 'chef/knife/server_bootstrap_standalone'
+
         ip = args.first.first #arg
 
         raise "No IP to use for the chef server" unless ip

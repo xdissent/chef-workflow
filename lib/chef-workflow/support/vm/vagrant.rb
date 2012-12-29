@@ -1,5 +1,3 @@
-require 'chef-workflow/support/vagrant'
-require 'chef-workflow/support/ip'
 require 'vagrant/prison'
 
 module ChefWorkflow
@@ -27,6 +25,9 @@ module ChefWorkflow
       # Constructor. Expects a server group name and a number of servers to provision.
       #
       def initialize(name, number_of_servers)
+        require 'chef-workflow/support/vagrant'
+        require 'chef-workflow/support/ip'
+
         @prison             = nil
         @name               = name
         @number_of_servers  = number_of_servers

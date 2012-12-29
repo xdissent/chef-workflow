@@ -1,7 +1,5 @@
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
-require 'chef-workflow/support/vm/ec2'
-require 'chef-workflow/support/vm/vagrant'
 
 module ChefWorkflow
   #
@@ -46,13 +44,15 @@ module ChefWorkflow
     def machine_provisioner(*args)
       if args.count > 0
         @machine_provisioner = case args.first
-                              when :ec2
-                                ChefWorkflow::VM::EC2Provisioner
-                              when :vagrant
-                                ChefWorkflow::VM::VagrantProvisioner
-                              else
-                                args.first
-                              end
+                               when :ec2
+                                 require 'chef-workflow/support/vm/ec2'
+                                 ChefWorkflow::VM::EC2Provisioner
+                               when :vagrant
+                                 require 'chef-workflow/support/vm/vagrant'
+                                 ChefWorkflow::VM::VagrantProvisioner
+                               else
+                                 args.first
+                               end
       end
 
       @machine_provisioner

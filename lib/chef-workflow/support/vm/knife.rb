@@ -1,12 +1,5 @@
 require 'chef-workflow/support/debug'
-require 'chef-workflow/support/knife'
 require 'chef-workflow/support/knife-plugin'
-require 'chef/node'
-require 'chef/search/query'
-require 'chef/knife/bootstrap'
-require 'chef/knife/client_delete'
-require 'chef/knife/node_delete'
-require 'timeout'
 
 module ChefWorkflow
   class VM
@@ -59,6 +52,14 @@ module ChefWorkflow
 
       # constructor.
       def initialize
+        require 'chef/node'
+        require 'chef/search/query'
+        require 'chef/knife/bootstrap'
+        require 'chef/knife/client_delete'
+        require 'chef/knife/node_delete'
+        require 'chef-workflow/support/knife'
+        require 'timeout'
+
         @ips            = []
         @username       = nil
         @password       = nil
