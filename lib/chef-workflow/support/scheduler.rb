@@ -58,9 +58,6 @@ module ChefWorkflow
     #
     def write_state 
       @vm.save_to_file
-      # FIXME not the best place to do this, but we have additional problems if
-      #       we don't
-      ChefWorkflow::IPSupport.singleton.write
     end
 
     #

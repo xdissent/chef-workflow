@@ -1,7 +1,8 @@
-require 'delegate'
 require 'fileutils'
-require 'chef-workflow/support/generic'
+require 'singleton'
+#require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
+require 'chef-workflow/support/db'
 
 ENV["TEST_CHEF_SUBNET"] ||= "10.10.10.0"
 
@@ -9,8 +10,21 @@ module ChefWorkflow
   #
   # IP allocation database. Uses `GenericSupport`.
   #
-  class IPSupport < DelegateClass(Hash)
+  class IPSupport
     extend ChefWorkflow::AttrSupport
+    include Singleton
+
+    def self.singleton
+      return instance
+    end
+
+    def self.configure(&block)
+      instance.instance_eval(&block) if block
+    end
+
+    def self.method_missing(sym, *args)
+      instance.send(sym, *args)
+    end
 
     ##
     # :attr:
@@ -20,42 +34,30 @@ module ChefWorkflow
     #
     fancy_attr :subnet
 
-    ##
-    # :attr:
-    #
-    # The location of the ip database.
-    #
-    fancy_attr :ip_file
-
-    def initialize(subnet=ENV["TEST_CHEF_SUBNET"], ip_file=File.join(Dir.pwd, '.chef-workflow', 'ips'))
+    def initialize(subnet=ENV["TEST_CHEF_SUBNET"])
       @subnet = subnet
-      reset
-      @ip_file = ip_file
-      super(@ip_assignment)
+      @db = ChefWorkflow::DatabaseSupport.instance
+      create_table
     end
 
-    #
-    # Resets (clears) the IP database.
-    #
-    def reset
-      @ip_assignment = { }
-    end
+    def create_table
+      @db.query <<-EOF
+      create table if not exists ips (
+        id integer not null primary key autoincrement,
+        role_name varchar(255) not null,
+        ip_addr varchar(255) not null,
+        UNIQUE(role_name),
+        UNIQUE(ip_addr)
+      )
+      EOF
 
-    #
-    # Loads the IP database from disk. Location is based on the `ip_file` accessor.
-    #
-    def load
-      if File.exist?(ip_file)
-        @ip_assignment = Marshal.load(File.binread(ip_file))
-      end
-    end
+      @db.query <<-EOF
+        create index if not exists ips_role_name_index on ips (role_name)
+      EOF
 
-    #
-    # Saves the IP database to disk. Location is based on the `ip_file` accessor.
-    #
-    def write
-      FileUtils.mkdir_p(File.dirname(ip_file))
-      File.binwrite(ip_file, Marshal.dump(@ip_assignment))
+      @db.query <<-EOF
+        create index if not exists ips_ip_addr_index on ips (ip_addr)
+      EOF
     end
 
     #
@@ -86,29 +88,28 @@ module ChefWorkflow
     # Predicate to determine if an IP is in use.
     #
     def ip_used?(ip)
-      @ip_assignment.values.flatten.include?(ip)
+      @db.query("select count(*) from ips where ip_addr=?", [ip]).first.first > 0 rescue nil
     end
 
     #
     # Appends an IP to a role.
     #
     def assign_role_ip(role, ip)
-      @ip_assignment[role] ||= []
-      @ip_assignment[role].push(ip)
+      @db.query("insert into ips (role_name, ip_addr) values (?, ?)", [role, ip])
     end
 
     #
     # Removes the role and all associated IPs.
     #
     def delete_role(role)
-      @ip_assignment.delete(role)
+      @db.query("delete from ips where role_name=?", [role])
     end
 
     #
     # Gets all the IPs for a role, as an array of strings.
     #
     def get_role_ips(role)
-      @ip_assignment[role] || []
+      @db.query("select ip_addr from ips where role_name=? order by id", [role]).map(&:first)
     end
 
     #
@@ -123,9 +124,8 @@ module ChefWorkflow
       end
     end
 
-    include ChefWorkflow::GenericSupport
+    #include ChefWorkflow::GenericSupport
   end
 end
 
 ChefWorkflow::IPSupport.configure
-ChefWorkflow::IPSupport.singleton.load
