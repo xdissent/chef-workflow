@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'aws-sdk', '~> 1.7.0'
   gem.add_dependency 'net-ssh', '~> 2.2.2'
   gem.add_dependency 'knife-server', '~> 0.3.3'
+  gem.add_dependency 'sqlite3', '~> 1.3.6'
 
   gem.add_development_dependency 'rdoc'
   gem.add_development_dependency 'rake'
