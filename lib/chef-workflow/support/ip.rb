@@ -41,7 +41,7 @@ module ChefWorkflow
     end
 
     def create_table
-      @db.query <<-EOF
+      @db.execute <<-EOF
       create table if not exists ips (
         id integer not null primary key autoincrement,
         role_name varchar(255) not null,
@@ -49,14 +49,6 @@ module ChefWorkflow
         UNIQUE(role_name),
         UNIQUE(ip_addr)
       )
-      EOF
-
-      @db.query <<-EOF
-        create index if not exists ips_role_name_index on ips (role_name)
-      EOF
-
-      @db.query <<-EOF
-        create index if not exists ips_ip_addr_index on ips (ip_addr)
       EOF
     end
 
@@ -88,28 +80,28 @@ module ChefWorkflow
     # Predicate to determine if an IP is in use.
     #
     def ip_used?(ip)
-      @db.query("select count(*) from ips where ip_addr=?", [ip]).first.first > 0 rescue nil
+      @db.execute("select count(*) from ips where ip_addr=?", [ip]).first.first > 0 rescue nil
     end
 
     #
     # Appends an IP to a role.
     #
     def assign_role_ip(role, ip)
-      @db.query("insert into ips (role_name, ip_addr) values (?, ?)", [role, ip])
+      @db.execute("insert into ips (role_name, ip_addr) values (?, ?)", [role, ip])
     end
 
     #
     # Removes the role and all associated IPs.
     #
     def delete_role(role)
-      @db.query("delete from ips where role_name=?", [role])
+      @db.execute("delete from ips where role_name=?", [role])
     end
 
     #
     # Gets all the IPs for a role, as an array of strings.
     #
     def get_role_ips(role)
-      @db.query("select ip_addr from ips where role_name=? order by id", [role]).map(&:first)
+      @db.execute("select ip_addr from ips where role_name=? order by id", [role]).map(&:first)
     end
 
     #

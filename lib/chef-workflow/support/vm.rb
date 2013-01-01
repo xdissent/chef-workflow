@@ -3,6 +3,7 @@ require 'fileutils'
 require 'chef-workflow/support/general'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
+require 'chef-workflow/support/db/group'
 
 #--
 # XXX see the dynamic require at the bottom
@@ -30,7 +31,8 @@ module ChefWorkflow
       vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
 
       if File.file?(vm_file)
-        return Marshal.load(File.binread(vm_file))
+        obj = Marshal.load(File.binread(vm_file))
+        obj.groups = ChefWorkflow::DatabaseSupport::VMGroup.new
       end
 
       return nil
@@ -42,13 +44,17 @@ module ChefWorkflow
     #
     def save_to_file
       vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
+      groups = self.groups
+      self.groups = nil
       marshalled = Marshal.dump(self)
       FileUtils.mkdir_p(File.dirname(vm_file))
-      File.binwrite(vm_file, marshalled)
+      res = File.binwrite(vm_file, marshalled)
+      self.groups = groups
+      return res
     end
 
     # the vm groups and their provisioning lists.
-    attr_reader :groups
+    attr_accessor :groups
     # the dependencies that each vm group depends on
     attr_reader :dependencies
     # the set of provisioned (solved) groups
@@ -57,13 +63,18 @@ module ChefWorkflow
     attr_reader :working
 
     def clean
-      @groups        = { }
+      @groups        = ChefWorkflow::DatabaseSupport::VMGroup.new(true)
       @dependencies  = { }
       @provisioned   = Set.new
       @working       = Set.new
     end
 
-    alias initialize clean
+    def initialize
+      @groups        = ChefWorkflow::DatabaseSupport::VMGroup.new
+      @dependencies  = { }
+      @provisioned   = Set.new
+      @working       = Set.new
+    end
   end
 
   # XXX require all the provisioners -- marshal will blow up unless this is done.
