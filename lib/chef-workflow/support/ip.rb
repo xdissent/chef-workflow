@@ -1,6 +1,5 @@
 require 'fileutils'
 require 'singleton'
-#require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/db'
 
