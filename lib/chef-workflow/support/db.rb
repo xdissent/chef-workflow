@@ -9,10 +9,18 @@ module ChefWorkflow
     include Singleton
 
     def initialize
+      super(connect)
+    end
+
+    def reconnect
+      close rescue nil
+      __setobj__(connect)
+    end
+
+    def connect
       vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
       FileUtils.mkdir_p(File.dirname(vm_file))
-      @db = SQLite3::Database.new(vm_file)
-      super(@db)
+      SQLite3::Database.new(vm_file)
     end
   end
 end
