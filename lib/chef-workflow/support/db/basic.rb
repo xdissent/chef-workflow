@@ -1,3 +1,5 @@
+require 'chef-workflow/support/db'
+
 module ChefWorkflow
   class DatabaseSupport
     class Generic

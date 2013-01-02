@@ -9,10 +9,9 @@ module ChefWorkflow
     include Singleton
 
     def initialize
-      workflow_dir = ChefWorkflow::GeneralSupport.singleton.workflow_dir
-      dbpath = File.join(workflow_dir, "state.db")
-      FileUtils.mkdir_p(workflow_dir)
-      @db = SQLite3::Database.new(dbpath)
+      vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
+      FileUtils.mkdir_p(File.dirname(vm_file))
+      @db = SQLite3::Database.new(vm_file)
       super(@db)
     end
   end
