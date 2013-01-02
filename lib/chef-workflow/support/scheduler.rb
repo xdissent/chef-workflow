@@ -38,7 +38,7 @@ module ChefWorkflow
     # Constructor. If the first argument is true, will install an `at_exit` hook
     # to write out the VM and IP databases.
     #
-    def initialize(at_exit_hook=true)
+    def initialize
       @force_deprovision  = false
       @solved_mutex       = Mutex.new
       @waiters_mutex      = Mutex.new
