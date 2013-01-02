@@ -1,8 +1,4 @@
-require 'chef-workflow/support/ec2'
-require 'chef-workflow/support/ip'
 require 'chef-workflow/support/debug'
-require 'net/ssh'
-require 'timeout'
 
 module ChefWorkflow
   class VM
@@ -12,6 +8,11 @@ module ChefWorkflow
       attr_accessor :name
 
       def initialize(name, number_of_servers)
+        require 'chef-workflow/support/ec2'
+        require 'chef-workflow/support/ip'
+        require 'net/ssh'
+        require 'timeout'
+
         @name = name
         @number_of_servers = number_of_servers
         @instance_ids = []

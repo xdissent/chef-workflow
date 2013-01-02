@@ -1,5 +1,3 @@
-require 'chef-workflow/support/vagrant'
-require 'chef-workflow/support/ip'
 require 'vagrant/prison'
 
 module ChefWorkflow
@@ -16,6 +14,10 @@ module ChefWorkflow
     # Groups provisioned in this manner are done so with Vagrant::Prison.
     #
     class VagrantProvisioner
+      require 'chef-workflow/support/vagrant'
+      require 'chef-workflow/support/ip'
+      require 'chef-workflow/support/db/basic'
+
       # Vagrant::Prison object
       attr_reader :prison
       # number of servers to provision
@@ -27,9 +29,10 @@ module ChefWorkflow
       # Constructor. Expects a server group name and a number of servers to provision.
       #
       def initialize(name, number_of_servers)
-        @prison             = nil
+        @db                 = ChefWorkflow::DatabaseSupport::Object.new("vm_prisons")
         @name               = name
         @number_of_servers  = number_of_servers
+        @prison             = @db[name]
       end
 
       #
@@ -77,8 +80,11 @@ module ChefWorkflow
         end
 
         prison.construct(:ui_class => ui_class)
+        @db[name] = prison # eager save in case start has issues
 
         return prison.start ? ips : false
+      ensure
+        @db[name] = prison
       end
 
       #
@@ -86,6 +92,8 @@ module ChefWorkflow
       # allocated IP addresses.
       #
       def shutdown
+        @prison ||= @db[name]
+
         if prison
           prison.configure_environment(:ui_class => ui_class)
           prison.cleanup

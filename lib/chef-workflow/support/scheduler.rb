@@ -4,6 +4,7 @@ require 'timeout'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
 require 'chef-workflow/support/vm'
+require 'chef-workflow/support/db/basic'
 
 module ChefWorkflow
   #
@@ -37,30 +38,16 @@ module ChefWorkflow
     # Constructor. If the first argument is true, will install an `at_exit` hook
     # to write out the VM and IP databases.
     #
-    def initialize(at_exit_hook=true)
+    def initialize
       @force_deprovision  = false
       @solved_mutex       = Mutex.new
       @waiters_mutex      = Mutex.new
       @serial             = false
       @solver_thread      = nil
       @working            = { }
-      @waiters            = Set.new
+      @waiters            = ChefWorkflow::DatabaseSupport::Set.new('vm_scheduler', 'waiters')
       @queue              = Queue.new
-      @vm                 = VM.load_from_file || VM.new 
-
-      if at_exit_hook
-        at_exit { write_state }
-      end
-    end
-
-    #
-    # Write out the VM and IP databases.
-    #
-    def write_state 
-      @vm.save_to_file
-      # FIXME not the best place to do this, but we have additional problems if
-      #       we don't
-      ChefWorkflow::IPSupport.singleton.write
+      @vm                 = VM.new
     end
 
     #
@@ -166,9 +153,9 @@ module ChefWorkflow
       return if @solver_thread and !@serial
 
       handler = lambda do |*args|
-        p ["solved:", solved]
-        p ["working:", @working]
-        p ["waiting:", @waiters]
+        p ["solved:", solved.to_a]
+        p ["working:", @working.keys]
+        p ["waiting:", @waiters.to_a]
       end
 
       %w[USR2 INFO].each { |sig| trap(sig, &handler) if Signal.list[sig] }
@@ -257,12 +244,12 @@ module ChefWorkflow
     #
     def service_resolved_waiters
       @waiters_mutex.synchronize do
-        @waiters -= (@working.keys.to_set + solved)
+        @waiters.replace(@waiters.to_set - (@working.keys.to_set + solved))
       end
 
       waiter_iteration = lambda do
         @waiters.each do |group_name|
-          if (solved & vm_dependencies[group_name]) == vm_dependencies[group_name]
+          if (solved.to_set & vm_dependencies[group_name]).to_a == vm_dependencies[group_name]
             if_debug do
               $stderr.puts "Provisioning #{group_name}"
             end
@@ -398,8 +385,6 @@ module ChefWorkflow
       (vm_groups.keys.to_set - exceptions.to_set).each do |group_name|
         deprovision_group(group_name) # clean this after everything finishes
       end
-
-      write_state
     end
   end
 end

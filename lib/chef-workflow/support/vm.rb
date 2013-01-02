@@ -3,6 +3,8 @@ require 'fileutils'
 require 'chef-workflow/support/general'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/debug'
+require 'chef-workflow/support/db/group'
+require 'chef-workflow/support/db/basic'
 
 #--
 # XXX see the dynamic require at the bottom
@@ -14,38 +16,7 @@ module ChefWorkflow
   # simple so that the contents can be marshalled and restored from a file.
   #
   class VM
-    class << self
-      extend ChefWorkflow::AttrSupport
-      fancy_attr :vm_file
-    end
-
     include ChefWorkflow::DebugSupport
-    extend ChefWorkflow::AttrSupport
-
-    #
-    # If a file exists that contains a VM object, load it. Use VM.vm_file to
-    # control the location of this file.
-    #
-    def self.load_from_file
-      vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
-
-      if File.file?(vm_file)
-        return Marshal.load(File.binread(vm_file))
-      end
-
-      return nil
-    end
-  
-    #
-    # Save the marshalled representation to a file. Use VM.vm_file to control the
-    # location of this file.
-    #
-    def save_to_file
-      vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
-      marshalled = Marshal.dump(self)
-      FileUtils.mkdir_p(File.dirname(vm_file))
-      File.binwrite(vm_file, marshalled)
-    end
 
     # the vm groups and their provisioning lists.
     attr_reader :groups
@@ -56,14 +27,12 @@ module ChefWorkflow
     # the set of provisioning (working) groups
     attr_reader :working
 
-    def clean
-      @groups        = { }
-      @dependencies  = { }
-      @provisioned   = Set.new
-      @working       = Set.new
+    def initialize
+      @groups        = ChefWorkflow::DatabaseSupport::VMGroup.new('vm_groups', false)
+      @dependencies  = ChefWorkflow::DatabaseSupport::VMGroup.new('vm_dependencies', true)
+      @provisioned   = ChefWorkflow::DatabaseSupport::Set.new('vm_scheduler', 'provisioned')
+      @working       = ChefWorkflow::DatabaseSupport::Set.new('vm_scheduler', 'working')
     end
-
-    alias initialize clean
   end
 
   # XXX require all the provisioners -- marshal will blow up unless this is done.
