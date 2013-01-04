@@ -39,7 +39,7 @@ module ChefWorkflow
       # Get the ips associated with this server group.
       #
       def ips
-        ChefWorkflow::IPSupport.singleton.get_role_ips(name)
+        ChefWorkflow::IPSupport.get_role_ips(name)
       end
 
       #
@@ -53,7 +53,7 @@ module ChefWorkflow
       # helper to bootstrap vagrant requirements.
       #
       def bootstrap_vagrant_ipsupport
-        ChefWorkflow::IPSupport.singleton.seed_vagrant_ips
+        ChefWorkflow::IPSupport.seed_vagrant_ips
       end
 
       #
@@ -63,7 +63,7 @@ module ChefWorkflow
       def startup(*args)
         bootstrap_vagrant_ipsupport
 
-        ChefWorkflow::IPSupport.singleton.delete_role(name)
+        ChefWorkflow::IPSupport.delete_role(name)
 
         @prison = Vagrant::Prison.new(Dir.mktmpdir, false)
         prison.name = name
@@ -71,8 +71,8 @@ module ChefWorkflow
           config.vm.box_url = ChefWorkflow::VagrantSupport.singleton.box_url
           config.vm.box = ChefWorkflow::VagrantSupport.singleton.box
           number_of_servers.times do |x|
-            ip = ChefWorkflow::IPSupport.singleton.unused_ip
-            ChefWorkflow::IPSupport.singleton.assign_role_ip(name, ip)
+            ip = ChefWorkflow::IPSupport.unused_ip
+            ChefWorkflow::IPSupport.assign_role_ip(name, ip)
             config.vm.define "#{name}-#{x}" do |this_config|
               this_config.vm.network :hostonly, ip
             end
@@ -98,7 +98,7 @@ module ChefWorkflow
           prison.configure_environment(:ui_class => ui_class)
           prison.cleanup
         end
-        ChefWorkflow::IPSupport.singleton.delete_role(name)
+        ChefWorkflow::IPSupport.delete_role(name)
       end
     end
 

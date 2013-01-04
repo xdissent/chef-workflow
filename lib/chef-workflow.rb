@@ -7,6 +7,11 @@ require 'chef-workflow/support/ip'
 require 'chef-workflow/support/debug'
 require 'chef-workflow/support/ec2'
 
+if ENV["REFACTOR"]
+  require 'deprecated'
+  Deprecated.set_action(:raise)
+end
+
 module ChefWorkflow
   #
   # Basic helpers (intended to be mixed in elsewhere) to configure the
