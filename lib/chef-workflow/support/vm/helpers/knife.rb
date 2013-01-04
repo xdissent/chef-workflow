@@ -4,11 +4,11 @@ module ChefWorkflow
   module KnifeProvisionHelper
     def build_knife_provisioner 
       kp              = ChefWorkflow::VM::KnifeProvisioner.new
-      kp.username     = ChefWorkflow::KnifeSupport.singleton.ssh_user
-      kp.password     = ChefWorkflow::KnifeSupport.singleton.ssh_password
-      kp.use_sudo     = ChefWorkflow::KnifeSupport.singleton.use_sudo
-      kp.ssh_key      = ChefWorkflow::KnifeSupport.singleton.ssh_identity_file
-      kp.environment  = ChefWorkflow::KnifeSupport.singleton.test_environment
+      kp.username     = ChefWorkflow::KnifeSupport.ssh_user
+      kp.password     = ChefWorkflow::KnifeSupport.ssh_password
+      kp.use_sudo     = ChefWorkflow::KnifeSupport.use_sudo
+      kp.ssh_key      = ChefWorkflow::KnifeSupport.ssh_identity_file
+      kp.environment  = ChefWorkflow::KnifeSupport.test_environment
 
       return kp
     end

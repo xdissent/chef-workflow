@@ -19,9 +19,9 @@ module ChefWorkflow
 
         args = %W[--node-name test-chef-server --host #{ip}]
 
-        args += %W[--ssh-user #{ChefWorkflow::KnifeSupport.singleton.ssh_user}]                 if ChefWorkflow::KnifeSupport.singleton.ssh_user
-        args += %W[--ssh-password #{ChefWorkflow::KnifeSupport.singleton.ssh_password}]         if ChefWorkflow::KnifeSupport.singleton.ssh_password
-        args += %W[--identity-file #{ChefWorkflow::KnifeSupport.singleton.ssh_identity_file}]   if ChefWorkflow::KnifeSupport.singleton.ssh_identity_file
+        args += %W[--ssh-user #{ChefWorkflow::KnifeSupport.ssh_user}]                 if ChefWorkflow::KnifeSupport.ssh_user
+        args += %W[--ssh-password #{ChefWorkflow::KnifeSupport.ssh_password}]         if ChefWorkflow::KnifeSupport.ssh_password
+        args += %W[--identity-file #{ChefWorkflow::KnifeSupport.ssh_identity_file}]   if ChefWorkflow::KnifeSupport.ssh_identity_file
 
         init_knife_plugin(Chef::Knife::ServerBootstrapStandalone, args).run
         true

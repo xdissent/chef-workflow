@@ -136,7 +136,7 @@ module ChefWorkflow
           map { |s| s.gsub(/\[/, 's:"').gsub(/\]/, '"') }.
           join(" AND ")
 
-        Timeout.timeout(ChefWorkflow::KnifeSupport.singleton.search_index_wait) do
+        Timeout.timeout(ChefWorkflow::KnifeSupport.search_index_wait) do
           until unchecked_node_names.empty?
             node_name = unchecked_node_names.shift
             if_debug(3) do
