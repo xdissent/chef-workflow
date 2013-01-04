@@ -18,7 +18,7 @@ module ChefWorkflow
     end
 
     def connect
-      vm_file = ChefWorkflow::GeneralSupport.singleton.vm_file
+      vm_file = ChefWorkflow::GeneralSupport.vm_file
       FileUtils.mkdir_p(File.dirname(vm_file))
       SQLite3::Database.new(vm_file)
     end

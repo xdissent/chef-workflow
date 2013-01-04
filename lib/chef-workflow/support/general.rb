@@ -1,3 +1,5 @@
+require 'singleton'
+require 'deprecated'
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
 
@@ -7,6 +9,27 @@ module ChefWorkflow
   # See `GenericSupport` for a rundown of usage.
   #
   class GeneralSupport
+
+    include Singleton
+
+    class << self
+      include Deprecated
+
+      def singleton
+        instance
+      end
+
+      def configure(&block)
+        instance.instance_eval(&block) if block
+      end
+
+      def method_missing(sym, *args)
+        instance.send(sym, *args)
+      end
+
+      deprecated :singleton, "ChefWorkflow::GeneralSupport class methods"
+    end
+
     # Standard chef-workflow dir.
     DEFAULT_CHEF_WORKFLOW_DIR   = File.join(Dir.pwd, '.chef-workflow')
     # Location of the VM database.
@@ -48,8 +71,6 @@ module ChefWorkflow
 
       @machine_provisioner
     end
-
-    include ChefWorkflow::GenericSupport
   end
 end
 

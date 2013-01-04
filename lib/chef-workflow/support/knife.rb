@@ -38,8 +38,8 @@ module ChefWorkflow
     DEFAULTS = {
       :search_index_wait      => 60,
       :cookbooks_path         => File.join(Dir.pwd, 'cookbooks'),
-      :chef_config_path       => File.join(ChefWorkflow::GeneralSupport.singleton.workflow_dir, 'chef'),
-      :knife_config_path      => File.join(ChefWorkflow::GeneralSupport.singleton.workflow_dir, 'chef', 'knife.rb'),
+      :chef_config_path       => File.join(ChefWorkflow::GeneralSupport.workflow_dir, 'chef'),
+      :knife_config_path      => File.join(ChefWorkflow::GeneralSupport.workflow_dir, 'chef', 'knife.rb'),
       :roles_path             => File.join(Dir.pwd, 'roles'),
       :environments_path      => File.join(Dir.pwd, 'environments'),
       :data_bags_path         => File.join(Dir.pwd, 'data_bags'),

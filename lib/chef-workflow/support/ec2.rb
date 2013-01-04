@@ -48,7 +48,7 @@ module ChefWorkflow
     # marshal the automatically created security groups to.
     #
     def security_group_setting_path
-      File.join(ChefWorkflow::GeneralSupport.singleton.workflow_dir, 'security-groups')
+      File.join(ChefWorkflow::GeneralSupport.workflow_dir, 'security-groups')
     end
 
     #
