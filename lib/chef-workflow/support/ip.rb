@@ -1,8 +1,7 @@
 require 'fileutils'
-require 'singleton'
-require 'deprecated'
 require 'chef-workflow/support/attr'
 require 'chef-workflow/support/db'
+require 'chef-workflow/support/generic'
 
 ENV["TEST_CHEF_SUBNET"] ||= "10.10.10.0"
 
@@ -12,25 +11,7 @@ module ChefWorkflow
   #
   class IPSupport
     extend ChefWorkflow::AttrSupport
-    include Singleton
-
-    class << self
-      include Deprecated
-
-      def singleton
-        return instance
-      end
-
-      def configure(&block)
-        instance.instance_eval(&block) if block
-      end
-
-      def method_missing(sym, *args)
-        instance.send(sym, *args)
-      end
-     
-      deprecated :singleton, "ChefWorkflow::IPSupport class methods"
-    end
+    include ChefWorkflow::GenericSupport
 
     ##
     # :attr:

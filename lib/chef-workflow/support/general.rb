@@ -1,5 +1,3 @@
-require 'singleton'
-require 'deprecated'
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/attr'
 
@@ -10,25 +8,7 @@ module ChefWorkflow
   #
   class GeneralSupport
     extend ChefWorkflow::AttrSupport 
-    include Singleton
-
-    class << self
-      include Deprecated
-
-      def singleton
-        instance
-      end
-
-      def configure(&block)
-        instance.instance_eval(&block) if block
-      end
-
-      def method_missing(sym, *args)
-        instance.send(sym, *args)
-      end
-
-      deprecated :singleton, "ChefWorkflow::GeneralSupport class methods"
-    end
+    include ChefWorkflow::GenericSupport
 
     # Standard chef-workflow dir.
     DEFAULT_CHEF_WORKFLOW_DIR   = File.join(Dir.pwd, '.chef-workflow')
@@ -48,8 +28,8 @@ module ChefWorkflow
     fancy_attr :vm_file
 
     def initialize(opts={})
-      @workflow_dir       = opts[:workflow_dir]       || DEFAULT_CHEF_WORKFLOW_DIR 
-      @vm_file            = opts[:vm_file]            || DEFAULT_CHEF_VM_FILE
+      @workflow_dir       = opts[:workflow_dir] || DEFAULT_CHEF_WORKFLOW_DIR 
+      @vm_file            = opts[:vm_file]      || DEFAULT_CHEF_VM_FILE
       machine_provisioner :vagrant
     end
 

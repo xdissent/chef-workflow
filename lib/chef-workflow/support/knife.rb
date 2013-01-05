@@ -1,6 +1,5 @@
 require 'fileutils'
 require 'erb'
-require 'singleton'
 require 'chef-workflow/support/generic'
 require 'chef-workflow/support/general'
 require 'chef-workflow/support/debug'
@@ -13,26 +12,7 @@ module ChefWorkflow
   class KnifeSupport
     include ChefWorkflow::DebugSupport
     extend ChefWorkflow::AttrSupport
-
-    include Singleton
-
-    class << self
-      include Deprecated
-
-      def singleton
-        return instance
-      end
-
-      def configure(&block)
-        instance.instance_eval(&block) if block
-      end
-
-      def method_missing(sym, *args)
-        instance.send(sym, *args)
-      end
-     
-      deprecated :singleton, "ChefWorkflow::KnifeSupport class methods"
-    end
+    include ChefWorkflow::GenericSupport
 
     # defaults, yo
     DEFAULTS = {
