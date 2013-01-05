@@ -68,8 +68,8 @@ module ChefWorkflow
         @prison = Vagrant::Prison.new(Dir.mktmpdir, false)
         prison.name = name
         prison.configure do |config|
-          config.vm.box_url = ChefWorkflow::VagrantSupport.singleton.box_url
-          config.vm.box = ChefWorkflow::VagrantSupport.singleton.box
+          config.vm.box_url = ChefWorkflow::VagrantSupport.box_url
+          config.vm.box = ChefWorkflow::VagrantSupport.box
           number_of_servers.times do |x|
             ip = ChefWorkflow::IPSupport.unused_ip
             ChefWorkflow::IPSupport.assign_role_ip(name, ip)
