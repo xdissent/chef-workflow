@@ -9,7 +9,7 @@ module ChefWorkflow
   # See `GenericSupport` for a rundown of usage.
   #
   class GeneralSupport
-
+    extend ChefWorkflow::AttrSupport 
     include Singleton
 
     class << self
@@ -34,8 +34,6 @@ module ChefWorkflow
     DEFAULT_CHEF_WORKFLOW_DIR   = File.join(Dir.pwd, '.chef-workflow')
     # Location of the VM database.
     DEFAULT_CHEF_VM_FILE        = File.join(DEFAULT_CHEF_WORKFLOW_DIR, 'state.db')
-
-    extend ChefWorkflow::AttrSupport 
 
     ##
     # :attr:
