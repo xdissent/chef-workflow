@@ -32,7 +32,7 @@ class VagrantSupport
   #
   def box_url=(url)
     @box_url = url
-    @box = File.basename(url).gsub('\.box', '')
+    @box = File.basename(url).gsub(/\.box$/, '')
   end
 
   include GenericSupport
