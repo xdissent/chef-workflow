@@ -65,7 +65,7 @@ module ChefWorkflow
 
     class Collection < Generic
       include Enumerable
-      
+
       def initialize(table_name, object_name)
         raise "an object_name must be provided!" unless object_name
         super
@@ -137,7 +137,7 @@ module ChefWorkflow
       def add(key)
         @db.execute("insert into #{@table_name} (name, key) values (?, ?)", [@object_name, key])
       end
-      
+
       def delete(key)
         @db.execute("delete from #{@table_name} where name=? and key=?", [@object_name, key])
       end
@@ -179,7 +179,7 @@ module ChefWorkflow
           UNIQUE(name, key) 
         )
         EOF
-        
+
         @db.execute "create index if not exists #{@table_name}_name_idx on #{@table_name} (name)"
       end
     end
@@ -195,7 +195,7 @@ module ChefWorkflow
         @db.execute("insert into #{@table_name} (name, key, value) values (?, ?, ?)", [@object_name, key, Marshal.dump(value)])
         value
       end
-      
+
       def each
         keys.each do |key|
           yield key, self[key]

@@ -63,7 +63,7 @@ module ChefWorkflow
     def vm_groups
       @vm.groups
     end
-    
+
     #
     # Helper to assist with dealing with a VM object
     #

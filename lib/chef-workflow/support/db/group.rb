@@ -15,8 +15,8 @@ module ChefWorkflow
 
       def [](key)
         rows = @db.execute("select value from #{@table_name} where name=? order by id", [key])
-        if rows.count == 0 
-          @box_nil ? [] : nil 
+        if rows.count == 0
+          @box_nil ? [] : nil
         else
           rows.to_a.map { |x| Marshal.load(x.first) }
         end
