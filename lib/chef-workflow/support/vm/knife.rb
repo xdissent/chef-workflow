@@ -25,7 +25,7 @@ module ChefWorkflow
 
       include ChefWorkflow::DebugSupport
       include ChefWorkflow::KnifePluginSupport
-    
+
       # the username for SSH.
       attr_accessor :username
       # the password for SSH.
@@ -151,7 +151,7 @@ module ChefWorkflow
             unless result and result.count == 1 and result.first.name == node_name
               unchecked_node_names << node_name
             end
-            
+
             # unfortunately if this isn't here you might as well issue kill -9 to
             # the rake process
             sleep 0.3
@@ -175,7 +175,7 @@ module ChefWorkflow
         args += %w[--sudo]                            if use_sudo
         args += %W[-i #{ssh_key}]                     if ssh_key
         args += %W[--template-file #{template_file}]  if template_file
-        args += %W[-p #{port}]                        if port 
+        args += %W[-p #{port}]                        if port
         args += %W[-E #{environment}]                 if environment
 
         args += %W[-r #{run_list.join(",")}]
