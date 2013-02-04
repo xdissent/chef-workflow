@@ -144,7 +144,7 @@ module ChefWorkflow
     #
     # This call also installs a SIGINFO (Ctrl+T in the terminal on macs) and
     # SIGUSR2 handler which can be used to get information on the status of
-    # what's solved and what's working. 
+    # what's solved and what's working.
     #
     # Immediately returns if in threaded mode and the solver is already running.
     #
@@ -154,7 +154,7 @@ module ChefWorkflow
 
       handler = lambda do |*args|
         p ["solved:", solved.to_a]
-        p ["working:", @working.keys]
+        p ["working:", vm_working.to_a]
         p ["waiting:", @waiters.to_a]
       end
 
@@ -260,6 +260,7 @@ module ChefWorkflow
               # FIXME maybe a way to specify initial args?
               args = nil
               provisioner.each do |this_prov|
+                vm_groups[group_name] = provisioner # force a write to the db
                 unless args = this_prov.startup(args)
                   $stderr.puts "Could not provision #{group_name} with provisioner #{this_prov.class.name}"
                   raise "Could not provision #{group_name} with provisioner #{this_prov.class.name}"
@@ -336,17 +337,19 @@ module ChefWorkflow
 
       # if we can't find the provisioner, we probably got asked to clean up
       # something we never scheduled. Just ignore that.
-      if provisioner
+      if provisioner and ((solved.to_set + vm_working.to_set).include?(group_name) or @force_deprovision)
         if_debug do
           $stderr.puts "Attempting to deprovision group #{group_name}"
         end
 
         perform_deprovision = lambda do |this_prov|
-          unless this_prov.shutdown
+          result = this_prov.shutdown
+          unless result
             if_debug do
               $stderr.puts "Could not deprovision group #{group_name}."
             end
           end
+          result
         end
 
         provisioner.reverse.each do |this_prov|
@@ -360,13 +363,18 @@ module ChefWorkflow
               end
             end
           else
-            perform_deprovision.call(this_prov)
+            unless perform_deprovision.call(this_prov)
+              raise "Could not deprovision #{group_name}/#{this_prov.inspect}"
+            end
           end
         end
       end
 
       if clean_state
         solved.delete(group_name)
+        @waiters_mutex.synchronize do
+          @waiters.delete(group_name)
+        end
         vm_working.delete(group_name)
         vm_dependencies.delete(group_name)
         vm_groups.delete(group_name)
