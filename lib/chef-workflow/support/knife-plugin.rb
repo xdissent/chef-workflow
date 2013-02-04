@@ -23,7 +23,7 @@ module ChefWorkflow
       klass.load_deps
       cli = klass.new(args)
       cli.ui = Chef::Knife::UI.new(
-        StringIO.new('', 'w'), 
+        StringIO.new('', 'w'),
         StringIO.new('', 'w'),
         StringIO.new('', 'r'),
         cli.config
