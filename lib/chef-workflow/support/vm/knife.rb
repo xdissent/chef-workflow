@@ -187,7 +187,13 @@ module ChefWorkflow
         bootstrap_cli = init_knife_plugin(Chef::Knife::Bootstrap, args)
 
         Thread.new do
-          bootstrap_cli.run
+          begin
+            bootstrap_cli.run
+          rescue SystemExit => e
+            # welp, looks like they finally fixed it.
+            # can't rely on it for compat reasons, but at least we're not
+            # dropping to a prompt when a bootstrap fails.
+          end
           # knife bootstrap is the honey badger when it comes to exit status.
           # We can't rely on it, so we examine the run_list of the node instead
           # to ensure it converged.
