@@ -19,7 +19,7 @@ module ChefWorkflow
       end
 
       def ssh_connection_check(ip)
-        Net::SSH.start(ip, ChefWorkflow::KnifeSupport.singleton.ssh_user, { :keys => [ChefWorkflow::KnifeSupport.singleton.ssh_identity_file] }) do |ssh|
+        Net::SSH.start(ip, ChefWorkflow::KnifeSupport.ssh_user, { :keys => [ChefWorkflow::KnifeSupport.ssh_identity_file] }) do |ssh|
           ssh.open_channel do |ch|
             ch.on_open_failed do
               return false
@@ -35,7 +35,7 @@ module ChefWorkflow
       end
 
       def ec2
-        ChefWorkflow::EC2Support.singleton
+        ChefWorkflow::EC2Support
       end
 
       def startup(*args)
@@ -120,7 +120,7 @@ module ChefWorkflow
 
               if ready
                 ip_addresses.push(instance.ip_address)
-                ChefWorkflow::IPSupport.singleton.assign_role_ip(name, instance.ip_address)
+                ChefWorkflow::IPSupport.assign_role_ip(name, instance.ip_address)
               else
                 sleep 0.3
                 instances.push(instance)
@@ -143,7 +143,7 @@ module ChefWorkflow
 
         @instance_ids.clear
 
-        ChefWorkflow::IPSupport.singleton.delete_role(name)
+        ChefWorkflow::IPSupport.delete_role(name)
         return true
       end
     end
