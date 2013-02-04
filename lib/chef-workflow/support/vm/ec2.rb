@@ -15,7 +15,7 @@ module ChefWorkflow
 
         @name = name
         @number_of_servers = number_of_servers
-        @instance_ids = []
+        @instance_ids = ChefWorkflow::DatabaseSupport::Set.new("vm_ec2_instances", name)
       end
 
       def ssh_connection_check(ip)
@@ -93,9 +93,9 @@ module ChefWorkflow
         end
 
         ip_addresses = []
-        
+
         instances.each do |instance|
-          @instance_ids.push(instance.id)
+          @instance_ids.add(instance.id)
         end
 
         begin
@@ -140,6 +140,8 @@ module ChefWorkflow
         @instance_ids.each do |instance_id|
           aws_ec2.instances[instance_id].terminate
         end
+
+        @instance_ids.clear
 
         ChefWorkflow::IPSupport.singleton.delete_role(name)
         return true
