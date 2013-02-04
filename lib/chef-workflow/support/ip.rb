@@ -33,8 +33,7 @@ module ChefWorkflow
         id integer not null primary key autoincrement,
         role_name varchar(255) not null,
         ip_addr varchar(255) not null,
-        UNIQUE(role_name),
-        UNIQUE(ip_addr)
+        UNIQUE(role_name, ip_addr)
       )
       EOF
     end
@@ -88,7 +87,7 @@ module ChefWorkflow
     # Get all the known roles
     #
     def roles
-      @ip_assignment.keys
+      @db.execute("select distinct role_name from ips").map(&:first);
     end
 
     #
