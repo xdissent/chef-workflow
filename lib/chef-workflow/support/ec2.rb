@@ -26,7 +26,7 @@ module ChefWorkflow
     end
 
     def ec2_obj
-      args = 
+      args =
         if access_key_id and secret_access_key
           {
             :access_key_id => access_key_id,
@@ -153,7 +153,7 @@ module ChefWorkflow
             $stderr.puts instances.map(&:id).inspect
             $stderr.puts "Terminating instances, sleeping, and trying again."
           end
-          
+
           instances.each do |i|
             i.terminate rescue nil
           end
