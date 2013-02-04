@@ -55,8 +55,6 @@ module ChefWorkflow
         require 'chef/node'
         require 'chef/search/query'
         require 'chef/knife/bootstrap'
-        require 'chef/knife/client_delete'
-        require 'chef/knife/node_delete'
         require 'chef-workflow/support/knife'
         require 'timeout'
 
@@ -69,7 +67,6 @@ module ChefWorkflow
         @run_list       = nil
         @template_file  = nil
         @environment    = nil
-        @node_names     = []
         @solr_check     = true
       end
 
@@ -86,12 +83,13 @@ module ChefWorkflow
         raise "This provisioner is unnamed, cannot continue" unless name
         raise "This provisioner requires ip addresses which were not supplied" unless ips
 
+        @node_names = ChefWorkflow::DatabaseSupport::Set.new('nodes', name)
         @run_list ||= ["role[#{name}]"]
 
         t = []
         ips.each_with_index do |ip, index|
           node_name = "#{name}-#{index}"
-          @node_names.push(node_name)
+          @node_names.add(node_name)
           t.push bootstrap(node_name, ip)
         end
 
@@ -107,16 +105,20 @@ module ChefWorkflow
       def shutdown
         t = []
 
+        @node_names = ChefWorkflow::DatabaseSupport::Set.new('nodes', name)
+
         @node_names.each do |node_name|
           t.push(
             Thread.new do
-              client_delete(node_name)
-              node_delete(node_name)
+              client_delete(node_name) rescue nil
+              node_delete(node_name) rescue nil
             end
           )
         end
 
         t.each(&:join)
+
+        @node_names.clear
 
         return true
       end
@@ -128,7 +130,7 @@ module ChefWorkflow
       #
       def check_nodes
         q = Chef::Search::Query.new
-        unchecked_node_names = @node_names.dup
+        unchecked_node_names = @node_names.to_a
 
         # this dirty hack turns 'role[foo]' into 'roles:foo', but also works on
         # recipe[] too. Then joins the whole thing with AND
@@ -144,7 +146,7 @@ module ChefWorkflow
             end
 
             result = q.search(
-              :node, 
+              :node,
               search_query + %Q[ AND name:"#{node_name}"]
             ).first
 
@@ -206,6 +208,7 @@ module ChefWorkflow
       # Deletes a chef client.
       #
       def client_delete(node_name)
+        require 'chef/knife/client_delete'
         init_knife_plugin(Chef::Knife::ClientDelete, [node_name, '-y']).run
       end
 
@@ -213,6 +216,7 @@ module ChefWorkflow
       # Deletes a chef node.
       #
       def node_delete(node_name)
+        require 'chef/knife/node_delete'
         init_knife_plugin(Chef::Knife::NodeDelete, [node_name, '-y']).run
       end
 
