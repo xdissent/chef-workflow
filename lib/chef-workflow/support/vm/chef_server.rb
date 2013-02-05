@@ -30,10 +30,10 @@ module ChefWorkflow
       def shutdown
         true
       end
-    end
 
-    def report
-      [name]
+      def report
+        [name]
+      end
     end
   end
 end

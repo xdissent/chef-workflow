@@ -100,10 +100,10 @@ module ChefWorkflow
         end
         ChefWorkflow::IPSupport.delete_role(name)
       end
-    end
 
-    def report
-      ["#{@number_of_servers} servers; prison dir: #{@prison.dir}"]
+      def report
+        ["#{@number_of_servers} servers; prison dir: #{@prison.dir}"]
+      end
     end
   end
 end
