@@ -146,10 +146,10 @@ module ChefWorkflow
         ChefWorkflow::IPSupport.delete_role(name)
         return true
       end
-    end
 
-    def report
-      ["#{@number_of_servers} servers; instance ids: #{@instance_ids.join(" ")}"]
+      def report
+        ["#{@number_of_servers} servers; instance ids: #{@instance_ids.join(" ")}"]
+      end
     end
   end
 end
