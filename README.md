@@ -42,3 +42,9 @@ Credits
 -------
 
 Author: [Erik Hollensbe](https://github.com/erikh)
+
+These companies have assisted by donating time, financial resources, and
+employment to those working on chef-workflow. Supporting OSS is really really
+cool and we should reciprocate.
+
+* [HotelTonight](http://www.hoteltonight.com) 
