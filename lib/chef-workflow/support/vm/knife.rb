@@ -70,6 +70,10 @@ module ChefWorkflow
         @solr_check     = true
       end
 
+      def init_nodes_db
+        @node_names = ChefWorkflow::DatabaseSupport::Set.new('nodes', name)
+      end
+
       #
       # Runs the provisioner. Accepts an array of IP addresses as its first
       # argument, intended to be provided by provisioners that ran before it as
@@ -83,7 +87,8 @@ module ChefWorkflow
         raise "This provisioner is unnamed, cannot continue" unless name
         raise "This provisioner requires ip addresses which were not supplied" unless ips
 
-        @node_names = ChefWorkflow::DatabaseSupport::Set.new('nodes', name)
+        init_nodes_db
+
         @run_list ||= ["role[#{name}]"]
 
         t = []
@@ -105,7 +110,7 @@ module ChefWorkflow
       def shutdown
         t = []
 
-        @node_names = ChefWorkflow::DatabaseSupport::Set.new('nodes', name)
+        init_nodes_db
 
         @node_names.each do |node_name|
           t.push(
@@ -229,8 +234,8 @@ module ChefWorkflow
       def report
         res = ["nodes:"]
 
-        @ips.each_with_index do |ip, i|
-          res += ["\t#{@node_names[i]}: #{ip}"]
+        ChefWorkflow::IPSupport.get_role_ips(name).each_with_index do |ip, i|
+          res += ["#{name}-#{i}: #{ip}"]
         end
 
         return res

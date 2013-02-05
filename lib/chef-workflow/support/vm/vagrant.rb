@@ -99,6 +99,8 @@ module ChefWorkflow
           prison.cleanup
         end
         ChefWorkflow::IPSupport.delete_role(name)
+        @db.delete(name)
+        return true
       end
 
       def report
