@@ -11,6 +11,7 @@ module ChefWorkflow
 
       def startup(*args)
         require 'chef-workflow/support/knife'
+        require 'chef/knife/ssh' # required for chef 10.12
         require 'chef/knife/server_bootstrap_standalone'
 
         ip = args.first.first #arg

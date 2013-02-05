@@ -54,6 +54,7 @@ module ChefWorkflow
       def initialize
         require 'chef/node'
         require 'chef/search/query'
+        require 'chef/knife/ssh'
         require 'chef/knife/bootstrap'
         require 'chef-workflow/support/knife'
         require 'timeout'
