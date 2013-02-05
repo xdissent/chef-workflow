@@ -9,6 +9,7 @@
   * Provisioners now have a 'report' method which is used in informational
     tasks to describe the provisioner's unique data.
   * Fix for knife bootstrap actually DTRT in chef 10.18.x
+  * SSHHelper from testlib was moved here, now that it's used by tasklib as well.
   * Docs. Lots and Lots and Lots of Docs.
 
 * 0.1.1 December 21, 2012
