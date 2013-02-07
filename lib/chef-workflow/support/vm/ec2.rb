@@ -15,6 +15,10 @@ module ChefWorkflow
 
         @name = name
         @number_of_servers = number_of_servers
+        init_instance_ids
+      end
+
+      def init_instance_ids
         @instance_ids = ChefWorkflow::DatabaseSupport::Set.new("vm_ec2_instances", name)
       end
 
@@ -148,7 +152,8 @@ module ChefWorkflow
       end
 
       def report
-        ["#{@number_of_servers} servers; instance ids: #{@instance_ids.join(" ")}"]
+        init_instance_ids
+        ["#{@number_of_servers} servers; instance ids: #{@instance_ids.to_a.join(" ")}"]
       end
     end
   end
