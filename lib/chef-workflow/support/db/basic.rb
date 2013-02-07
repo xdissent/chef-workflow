@@ -163,7 +163,7 @@ module ChefWorkflow
       end
 
       def keys
-        @db.execute("select key from #{@table_name} where name=?", [@object_name]).map(&:first)
+        @db.execute("select distinct key from #{@table_name} where name=?", [@object_name]).map(&:first)
       end
 
       def each

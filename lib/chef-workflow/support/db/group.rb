@@ -34,7 +34,7 @@ module ChefWorkflow
       end
 
       def keys
-        @db.execute("select name from #{@table_name}").map(&:first)
+        @db.execute("select distinct name from #{@table_name}").map(&:first)
       end
 
       def delete(key)
