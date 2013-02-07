@@ -33,8 +33,9 @@ module ChefWorkflow
               return true
             end
           end
+          ssh.loop
         end
-      rescue
+      rescue Exception => e
         return false
       end
 
