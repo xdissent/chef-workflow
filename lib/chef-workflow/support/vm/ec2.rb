@@ -103,37 +103,51 @@ module ChefWorkflow
           @instance_ids.add(instance.id)
         end
 
+        ipaddress_mutex = Mutex.new
+        debug_mutex = Mutex.new
+
         begin
           Timeout.timeout(ec2.provision_wait) do
-            until instances.empty?
-              instance = instances.shift
+            instances.map do |instance|
+              Thread.new do
+                loop do
+                  ready = false
 
-              ready = false
-
-              if instance.status == :running
-                ready = ssh_connection_check(instance.ip_address)
-                unless ready
-                  if_debug(3) do
-                    $stderr.puts "Instance #{instance.id} running, but ssh isn't up yet."
+                  if instance.status == :running
+                    ready = ssh_connection_check(instance.ip_address)
+                    unless ready
+                      if_debug(3) do
+                        debug_mutex.synchronize do
+                          $stderr.puts "Instance #{instance.id} running, but ssh isn't up yet."
+                        end
+                      end
+                    end
+                  else
+                    if_debug(3) do
+                      debug_mutex.synchronize do
+                        $stderr.puts "#{instance.id} isn't running yet -- scheduling for re-check"
+                      end
+                    end
                   end
-                end
-              else
-                if_debug(3) do
-                  $stderr.puts "#{instance.id} isn't running yet -- scheduling for re-check"
-                end
-              end
 
-              if ready
-                ip_addresses.push(instance.ip_address)
-                ChefWorkflow::IPSupport.assign_role_ip(name, instance.ip_address)
-              else
-                sleep 0.3
-                instances.push(instance)
+                  if ready
+                    ipaddress_mutex.synchronize do
+                      ip_addresses.push(instance.ip_address)
+                    end
+                    break
+                  end
+
+                  sleep 2
+                end
               end
-            end
+            end.each(&:join)
           end
         rescue TimeoutError
           raise "instances timed out waiting for ec2"
+        end
+
+        ip_addresses.each do |ipaddr|
+          ChefWorkflow::IPSupport.assign_role_ip(name, ipaddr)
         end
 
         return ip_addresses
