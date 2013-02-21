@@ -24,6 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'knife-server', '~> 0.3.3'
   gem.add_dependency 'sqlite3', '~> 1.3.6'
   gem.add_dependency 'deprecated', '~> 3.0.1'
+  gem.add_dependency 'json', '= 1.5.4'
 
   gem.add_development_dependency 'rdoc'
   gem.add_development_dependency 'rake'

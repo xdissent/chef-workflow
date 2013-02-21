@@ -1,4 +1,6 @@
-* 0.2.0 (unreleased)
+* 0.2.1 February 20, 2013
+  * Fixate JSON dependnecy to keep knife from breaking in bundles.
+* 0.2.0 February 8, 2013 
   * Several missing validation checks and edge races were resolved.
   * Significant internals refactor -- things that were fast and simple when
     things were small got less fast and simple later.
