@@ -23,6 +23,7 @@ module ChefWorkflow
         args += %W[--ssh-user #{ChefWorkflow::KnifeSupport.ssh_user}]                 if ChefWorkflow::KnifeSupport.ssh_user
         args += %W[--ssh-password #{ChefWorkflow::KnifeSupport.ssh_password}]         if ChefWorkflow::KnifeSupport.ssh_password
         args += %W[--identity-file #{ChefWorkflow::KnifeSupport.ssh_identity_file}]   if ChefWorkflow::KnifeSupport.ssh_identity_file
+        args += %W[--webui-password #{ChefWorkflow::KnifeSupport.webui_password}]     if ChefWorkflow::KnifeSupport.webui_password
 
         init_knife_plugin(Chef::Knife::ServerBootstrapStandalone, args).run
         true

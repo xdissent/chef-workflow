@@ -28,7 +28,8 @@ module ChefWorkflow
       :ssh_identity_file      => nil,
       :use_sudo               => true,
       :test_environment       => "vagrant",
-      :test_recipes           => []
+      :test_recipes           => [],
+      :webui_password         => "chefwkflw"
     }
 
     DEFAULTS[:knife_config_template] = <<-EOF
