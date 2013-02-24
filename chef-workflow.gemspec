@@ -18,7 +18,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency 'vagrant-prison', '~> 0.1.0'
-  gem.add_dependency 'chef', '~> 10.0'
+  gem.add_dependency 'chef', '~> 11.0'
   gem.add_dependency 'aws-sdk', '~> 1.7.0'
   gem.add_dependency 'net-ssh', '~> 2.2.2'
   gem.add_dependency 'knife-server', '~> 0.3.3'
