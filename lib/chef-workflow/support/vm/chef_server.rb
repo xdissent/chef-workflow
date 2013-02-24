@@ -19,11 +19,15 @@ module ChefWorkflow
         raise "No IP to use for the chef server" unless ip
 
         args = %W[--node-name test-chef-server --host #{ip}]
+        args += %W[--platform #{ChefWorkflow::KnifeSupport.platform || "auto"}]
 
-        args += %W[--ssh-user #{ChefWorkflow::KnifeSupport.ssh_user}]                 if ChefWorkflow::KnifeSupport.ssh_user
-        args += %W[--ssh-password #{ChefWorkflow::KnifeSupport.ssh_password}]         if ChefWorkflow::KnifeSupport.ssh_password
-        args += %W[--identity-file #{ChefWorkflow::KnifeSupport.ssh_identity_file}]   if ChefWorkflow::KnifeSupport.ssh_identity_file
-        args += %W[--webui-password #{ChefWorkflow::KnifeSupport.webui_password}]     if ChefWorkflow::KnifeSupport.webui_password
+        args += %W[--ssh-user #{ChefWorkflow::KnifeSupport.ssh_user}]                       if ChefWorkflow::KnifeSupport.ssh_user
+        args += %W[--ssh-password #{ChefWorkflow::KnifeSupport.ssh_password}]               if ChefWorkflow::KnifeSupport.ssh_password
+        args += %W[--identity-file #{ChefWorkflow::KnifeSupport.ssh_identity_file}]         if ChefWorkflow::KnifeSupport.ssh_identity_file
+        args += %W[--webui-password #{ChefWorkflow::KnifeSupport.webui_password}]           if ChefWorkflow::KnifeSupport.webui_password
+        args += %W[--amqp-password #{ChefWorkflow::KnifeSupport.amqp_password}]             if ChefWorkflow::KnifeSupport.amqp_password
+        args += %W[--distro #{ChefWorkflow::KnifeSupport.distro}]                           if ChefWorkflow::KnifeSupport.distro
+        args += %W[--chef-server-version #{ChefWorkflow::KnifeSupport.chef_server_version}] if ChefWorkflow::KnifeSupport.chef_server_version
 
         init_knife_plugin(Chef::Knife::ServerBootstrapStandalone, args).run
         true

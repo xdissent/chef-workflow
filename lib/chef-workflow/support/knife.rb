@@ -29,7 +29,11 @@ module ChefWorkflow
       :use_sudo               => true,
       :test_environment       => "vagrant",
       :test_recipes           => [],
-      :webui_password         => "chefwkflw"
+      :webui_password         => "chefchef",
+      :amqp_password          => "chefchef",
+      :platform               => nil,
+      :distro                 => nil,
+      :chef_server_version    => nil
     }
 
     DEFAULTS[:knife_config_template] = <<-EOF
