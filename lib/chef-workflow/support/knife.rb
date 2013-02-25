@@ -33,7 +33,10 @@ module ChefWorkflow
       :amqp_password          => "chefchef",
       :platform               => nil,
       :distro                 => nil,
-      :chef_server_version    => nil
+      :chef_server_version    => nil,
+      :chef_server_url        => nil,
+      :node_name              => "test-user",
+      :host_key_verify        => false
     }
 
     DEFAULTS[:knife_config_template] = <<-EOF

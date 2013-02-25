@@ -9,6 +9,8 @@ module ChefWorkflow
       kp.use_sudo     = ChefWorkflow::KnifeSupport.use_sudo
       kp.ssh_key      = ChefWorkflow::KnifeSupport.ssh_identity_file
       kp.environment  = ChefWorkflow::KnifeSupport.test_environment
+      kp.distro       = ChefWorkflow::KnifeSupport.distro
+      kp.host_key_verify = ChefWorkflow::KnifeSupport.host_key_verify
 
       return kp
     end

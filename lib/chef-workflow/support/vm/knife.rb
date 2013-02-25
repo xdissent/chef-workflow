@@ -49,6 +49,10 @@ module ChefWorkflow
       # perform the solr check to ensure the instance has converged and its
       # metadata is ready for searching.
       attr_accessor :solr_check
+      # distro
+      attr_accessor :distro
+      # host key verify
+      attr_accessor :host_key_verify
 
       # constructor.
       def initialize
@@ -69,6 +73,8 @@ module ChefWorkflow
         @template_file  = nil
         @environment    = nil
         @solr_check     = true
+        @distro         = nil
+        @host_key_verify = true
       end
 
       def init_nodes_db
@@ -185,7 +191,9 @@ module ChefWorkflow
         args += %W[--template-file #{template_file}]  if template_file
         args += %W[-p #{port}]                        if port
         args += %W[-E #{environment}]                 if environment
+        args += %W[--#{"no-" unless host_key_verify}host-key-verify]
 
+        args += %W[-d #{distro || "chef-full"}]
         args += %W[-r #{run_list.join(",")}]
         args += %W[-N '#{node_name}']
         args += [ip]
