@@ -12,13 +12,14 @@ module ChefWorkflow
     DEFAULT_VAGRANT_BOX = "http://files.vagrantup.com/precise32.box"
 
     # the calculated box, currently taken from the box_url. Expect this to change.
-    attr_reader :box
+    attr_reader :box, :customizations
 
     #--
     # FIXME: support non-url boxes and ram configurations
     #++
     def initialize(box_url=DEFAULT_VAGRANT_BOX)
       self.box_url = box_url
+      @customizations = []
     end
 
     #
@@ -38,6 +39,10 @@ module ChefWorkflow
     def box_url=(url)
       @box_url = url
       @box = File.basename(url).gsub(/\.box$/, '')
+    end
+
+    def customize(arg = nil)
+      @customizations << arg unless arg.nil?
     end
   end
 end
